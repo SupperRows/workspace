@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.open.capacity.user.dao.PayinfoDao">
+
+    <resultMap type="com.open.capacity.user.model.Payinfo" id="payinfoMap">
+        <result property="payId" column="pay_id"/>
+        <result property="orderId" column="order_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="payPlatform" column="pay_platform"/>
+        <result property="platformNumber" column="platform_number"/>
+        <result property="platformStatus" column="platform_status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <insert id="save" parameterType="com.open.capacity.user.model.Payinfo">
+        insert into payinfo(pay_id,order_id,user_id,pay_platform,platform_number,platform_status,create_time)
+                  values (#{ payId},#{ orderId},#{ userId},#{ payPlatform},#{ platformNumber},#{ platformStatus},now())
+    </insert>
+
+    <update id="update" parameterType="com.open.capacity.user.model.Payinfo">
+        update payinfo
+        <set>
+            <if test="payId != null">
+                pay_id = #{payId},
+            </if>
+            <if test="orderId != null">
+                order_id = #{orderId},
+            </if>
+            <if test="userId != null">
+                user_id = #{userId},
+            </if>
+            <if test="payPlatform != null">
+                pay_platform = #{payPlatform},
+            </if>
+            <if test="platformNumber != null">
+                platform_number = #{platformNumber},
+            </if>
+            <if test="platformStatus != null">
+                platform_status = #{platformStatus},
+            </if>
+            update_time = now()
+        </set>
+        where pay_id = #{payId}
+    </update>
+
+    <delete id="delete" parameterType="String" flushCache="true">
+        delete from payinfo where pay_id = #{payId}
+    </delete>
+
+    <select id="findAll" parameterType="map" resultMap="payinfoMap">
+        select * from payinfo t
+        <include refid="where"/>
+    </select>
+    <sql id="where">
+        <where>
+            <if test="searchKey != null and searchKey != '' and searchKey=='payId'">
+                and t.pay_id like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='orderId'">
+                and t.order_id like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='userId'">
+                and t.user_id like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='payPlatform'">
+                and t.pay_platform like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='platformNumber'">
+                and t.platform_number like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='platformStatus'">
+                and t.platform_status like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='createTime'">
+                t.create_time between substring_index(#{searchValue}, ' - ', 1) and substring_index(#{searchValue}, ' -
+                ', -1)
+            </if>
+        </where>
+    </sql>
+</mapper>

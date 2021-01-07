@@ -1,0 +1,356 @@
+<div class="layui-card">
+    <div class="layui-card-body">
+        <div class="layui-form toolbar">
+            <button id="ranks-btn-add" class=" layui-btn icon-btn layui-btn-warm"><i class="layui-icon">&#xe654;</i>添加等级
+            </button>
+        </div>
+        <!-- 数据表格 -->
+        <table class="layui-table" id="userRanks-table" lay-filter="userRanks-table"></table>
+    </div>
+</div>
+
+<!-- 表单弹窗 -->
+<script type="text/html" id="userRanks-model">
+    <form id="userRanks-form" lay-filter="userRanks-form" class="layui-form model-form">
+        <div class="layui-form-item">
+            <label class="layui-form-label">等级名称</label>
+            <div class="layui-input-block">
+                <input name="rankName" placeholder="请输入等级名称" type="text"
+                       class="layui-input" maxlength="20"
+                       lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">开始积分</label>
+            <div class="layui-input-block">
+                <input name="startScore" placeholder="请输入开始积分(大于开始积分)" type="number"
+                       class="layui-input" maxlength="20"
+                       lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">结束积分</label>
+            <div class="layui-input-block">
+                <input name="endScore" placeholder="请输入结束积分(包含开始积分)" type="number"
+                       class="layui-input" maxlength="20"
+                       lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">折扣</label>
+            <div class="layui-input-block">
+                <input name="rebate" placeholder="请输入折扣" type="number"
+                       class="layui-input" maxlength="20"
+                       lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">等级图标</label>
+            <div class="layui-input-block">
+                <input name="userrankImg" placeholder="请输入等级图标" type="text"
+                       class="layui-input" maxlength="20"
+                       lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item model-form-footer">
+            <div class="layui-upload-list">
+                <img class="layui-upload-img" id="userrankImg">
+            </div>
+            <button class="layui-btn" id="upload-ranks-icon" type="button">上传等级图标</button>
+        </div>
+    </form>
+</script>
+
+<!-- 表格操作列 -->
+<script type="text/html" id="userRanks-table-bar">
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="edit">修改</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+<script>
+    layui.use(['form', 'table', 'util', 'config', 'laydate', 'admin', 'formSelects', 'upload'], function () {
+        var $ = layui.jquery
+            , upload = layui.upload;
+        var form = layui.form;
+        var table = layui.table;
+        var config = layui.config;
+        var layer = layui.layer;
+        var laydate = layui.laydate;
+        var util = layui.util;
+        var admin = layui.admin;
+        var formSelects = layui.formSelects;
+
+        //渲染表格
+        layer.load(2);
+        table.render({
+            elem: '#userRanks-table',
+            url: config.base_server + 'api-user/userranks/list',
+            where: {
+                access_token: config.getToken().access_token,
+                searchKey: 'dataflag',
+                searchValue: '1'
+            },
+            page: false,
+            cols: [[
+                {type: 'numbers'},
+                {align: 'center', field: 'rankName', sort: true, title: '等级名称'},
+                {align: 'center', field: 'startScore', sort: true, title: '开始积分'},
+                {align: 'center', field: 'endScore', sort: true, title: '结束积分'},
+                {
+                    field: 'rebate', sort: true, templet: function (d) {
+                        return d.rebate / 100 + '折';
+                    }, title: '折扣', align: 'center'
+                },
+                {
+                    field: 'userrankImg', sort: true, templet: function (d) {
+                        let res = '<a href="' + d.userrankImg + '" target="_blank" title="点击查看大图"><img width="40px" height="40px" src="' + d.userrankImg + '"/></a>'
+                        return res;
+                    }, title: '等级图标', align: 'center'
+                },
+                {field: 'createTime', sort: true, title: '创建时间', align: 'center'},
+                {align: 'center', align: 'center', toolbar: '#userRanks-table-bar', title: '操作', width: 250}
+            ]
+            ],
+            done: function (res, curr, count) {
+                $(".layui-table-cell").css("height", "auto");
+                layer.closeAll('loading');
+            }
+        });
+
+        // 工具条点击事件
+        table.on('tool(userRanks-table)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'edit') { //修改
+                doUpdate(data);
+            } else if (obj.event === 'del') { //删除
+                doDelete(obj);
+            }
+        });
+
+        // 添加按钮点击事件
+        $('#ranks-btn-add').click(function () {
+            doSave();
+        });
+
+        // 删除
+        var doDelete = function (obj) {
+            layer.confirm('确定要删除吗？', function (i) {
+                layer.close(i);
+                layer.load(2);
+                const reqdata = {
+                    rankId: obj.data.rankId,
+                    dataflag: 0
+                }
+                admin.req('api-user/userranks/update', JSON.stringify(reqdata), function (data) {
+                    layer.closeAll('loading');
+                    if (data.code == 0) {
+                        layer.msg(data.msg, {icon: 1, time: 500});
+                        obj.del();
+                    } else {
+                        layer.msg(data.msg, {icon: 2, time: 500});
+                    }
+                }, 'POST');
+            });
+        };
+
+        //编辑
+        var doUpdate = function (data) {
+            layer.open({
+                type: 1,
+                area: ['30%'],
+                title: ['编辑等级信息'],
+                btn: ['保存', '取消'],
+                btnAlign: 'c',
+                shade: 0.5,
+                content: $('#userRanks-model').html(),
+                success: function (layero, index) {
+                    //数据回写
+                    $("input[name='rankName']").val(data.rankName);
+                    $("input[name='rebate']").val(data.rebate);
+                    $("input[name='startScore']").val(data.startScore);
+                    $("input[name='endScore']").val(data.endScore);
+                    $("input[name='userrankImg']").val(data.userrankImg);
+                    //普通图片上传
+                    var uploadInst = upload.render({
+                        elem: '#upload-ranks-icon',
+                        url: config.base_server + 'api-file/files-anon',
+                        accept: 'file',
+                        auto: true,
+                        before: function (obj) {
+                            //预读本地文件示例，不支持ie8
+                            layer.load(); //上传loading
+                            this.data = {access_token: config.getToken().access_token};
+                            //预读本地文件示例，不支持ie8
+                            obj.preview(function (index, file, result) {
+                                $('#userrankImg').attr('src', result).attr('width', '50px').attr('height', '50px');
+                            });
+                        },
+                        done: function (res) {
+                            $("input[name='userrankImg']").val(res.url);
+                            layer.closeAll('loading');
+                        },
+                        error: function () {
+                            layer.closeAll('loading');
+                            //演示失败状态，并实现重传
+                            var demoText = $('#demoText');
+                            demoText.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>');
+                            demoText.find('.demo-reload').on('click', function () {
+                                uploadInst.upload();
+                            });
+                        }
+                    });
+                },
+                yes: function (index, layero) {
+                    const rankName = $("input[name='rankName']").val();
+                    const rebate = $("input[name='rebate']").val();
+                    const startScore = $("input[name='startScore']").val();
+                    const endScore = $("input[name='endScore']").val();
+                    const userrankImg = $("input[name='userrankImg']").val();
+                    if (rankName == '') {
+                        layer.msg("请输入等级名称!", {});
+                    } else if (startScore == '') {
+                        layer.msg("请输入开始积分!", {});
+                    } else if (endScore == '') {
+                        layer.msg("请输入结束积分!", {});
+                    } else if (startScore >= endScore) {
+                        layer.msg("开始积分不能大于结束积分", {});
+                    } else if (rebate == '') {
+                        layer.msg("请输入折扣!", {});
+                    } else if (String(rebate).indexOf(".") != -1) {
+                        layer.msg("折扣必须为整数!", {});
+                    } else {
+                        var reqdata = {
+                            rankId: data.rankId,
+                            rankName: rankName,
+                            rebate: rebate,
+                            startScore: startScore,
+                            endScore: endScore,
+                            userrankImg: userrankImg,
+                            dataflag: data.dataflag
+                        }
+                        admin.req('api-user/userranks/update', JSON.stringify(reqdata), function (res) {
+                            if (res.code == 0) {
+                                layer.alert(res.msg, {
+                                    icon: 1,
+                                    title: '提示'
+                                }, function (i) {
+                                    layer.close(i);
+                                    layer.close(index); // 关闭弹出层
+                                    $("#userRanks-form")[0].reset() // 重置form
+                                })
+                                table.reload('userRanks-table', { // 重载表格
+                                    page: {
+                                        curr: 1
+                                    }
+                                })
+                            } else {
+                                layer.msg(res.msg, {
+                                    icon: 5
+                                });
+                            }
+                        }, "POST")
+                    }
+                }
+            })
+        };
+
+        // 增加
+        var doSave = function () {
+            //添加
+            layer.open({
+                type: 1,
+                area: ['30%'],
+                title: ['新增等级信息'],
+                btn: ['保存', '取消'],
+                btnAlign: 'c',
+                shade: 0.5,
+                content: $('#userRanks-model').html(),
+                btn: ['确定', '取消'],
+                success: function (layero, index) {
+                    //普通图片上传
+                    var uploadInst = upload.render({
+                        elem: '#upload-ranks-icon',
+                        url: config.base_server + 'api-file/files-anon',
+                        accept: 'file',
+                        auto: true,
+                        before: function (obj) {
+                            //预读本地文件示例，不支持ie8
+                            layer.load(); //上传loading
+                            this.data = {access_token: config.getToken().access_token};
+                            //预读本地文件示例，不支持ie8
+                            obj.preview(function (index, file, result) {
+                                $('#userrankImg').attr('src', result).attr('width', '50px').attr('height', '50px');
+                            });
+                        },
+                        done: function (res) {
+                            $("input[name='userrankImg']").val(res.url);
+                            layer.closeAll('loading');
+                        },
+                        error: function () {
+                            layer.closeAll('loading');
+                            //演示失败状态，并实现重传
+                            var demoText = $('#demoText');
+                            demoText.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>');
+                            demoText.find('.demo-reload').on('click', function () {
+                                uploadInst.upload();
+                            });
+                        }
+                    });
+                },
+                yes: function (index, layero) {
+                    const rankName = $("input[name='rankName']").val();
+                    const rebate = $("input[name='rebate']").val();
+                    const startScore = $("input[name='startScore']").val();
+                    const endScore = $("input[name='endScore']").val();
+                    const userrankImg = $("input[name='userrankImg']").val();
+                    if (rankName == '') {
+                        layer.msg("请输入等级名称!", {});
+                    } else if (startScore == '') {
+                        layer.msg("请输入开始积分!", {});
+                    } else if (endScore == '') {
+                        layer.msg("请输入结束积分!", {});
+                    } else if (startScore >= endScore) {
+                        layer.msg("开始积分不能大于结束积分", {});
+                    } else if (rebate == '') {
+                        layer.msg("请输入折扣!", {});
+                    } else if (String(rebate).indexOf(".") != -1) {
+                        layer.msg("折扣必须为整数!", {});
+                    } else {
+                        var reqdata = {
+                            rankId: 0,
+                            rankName: rankName,
+                            rebate: rebate,
+                            startScore: startScore,
+                            endScore: endScore,
+                            userrankImg: userrankImg,
+                            dataflag: 1
+                        }
+                        admin.req('api-user/userranks/save', JSON.stringify(reqdata), function (res) {
+                            if (res.code == 0) {
+                                layer.alert(res.msg, {
+                                    icon: 1,
+                                    title: '提示'
+                                }, function (i) {
+                                    layer.close(i);
+                                    layer.close(index); // 关闭弹出层
+                                    $("#userRanks-form")[0].reset() // 重置form
+                                })
+                                table.reload('userRanks-table', { // 重载表格
+                                    page: {
+                                        curr: 1
+                                    }
+                                })
+                            } else {
+                                layer.msg(res.msg, {
+                                    icon: 5
+                                });
+                            }
+                        }, "PUT")
+                    }
+                }
+            })
+        }
+
+    });
+
+</script>

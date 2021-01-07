@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.open.capacity.user.dao.GoodsEvaluateDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.open.capacity.user.model.GoodsEvaluate" id="goodsEvaluateMap">
+        <result property="id" column="id"/>
+        <result property="orderId" column="order_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="goodsId" column="goods_id"/>
+        <result property="evaluate" column="evaluate"/>
+        <result property="imgUrl" column="img_url"/>
+        <result property="score" column="score"/>
+        <result property="transportationScore" column="transportation_score"/>
+        <result property="service" column="service"/>
+        <result property="dataFlag" column="data_flag"/>
+    </resultMap>
+
+    <insert id="save" parameterType="com.open.capacity.user.model.GoodsEvaluate">
+        insert into evaluate(id,order_id,user_id,goods_id,evaluate,img_url,score,transportation_score,service,data_flag
+        ) values (#{ id},#{ orderId}, #{ userId},#{ goodsId},#{ evaluate},#{ imgUrl},#{ score},#{ transportationScore},#{ service},
+        #{dataFlag})
+    </insert>
+
+    <update id="update" parameterType="com.open.capacity.user.model.GoodsEvaluate">
+        update evaluate
+        <set>
+            <if test="id != null">
+                id = #{id},
+            </if>
+            <if test="orderId != null">
+                order_id = #{orderId},
+            </if>
+            <if test="userId != null">
+                user_id = #{userId},
+            </if>
+            <if test="goodsId != null">
+                goods_id = #{goodsId},
+            </if>
+            <if test="evaluate != null">
+                evaluate = #{evaluate},
+            </if>
+            <if test="imgUrl != null">
+                img_url = #{imgUrl},
+            </if>
+            <if test="score != null">
+                score = #{score},
+            </if>
+            <if test="transportationScore != null">
+                transportation_score = #{transportationScore},
+            </if>
+            <if test="service != null">
+                service = #{service},
+            </if>
+            <if test="dataFlag != null">
+                data_flag = #{dataFlag},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="long" flushCache="true">
+        delete from evaluate where id = #{id}
+    </delete>
+
+    <select id="findAll" resultMap="goodsEvaluateMap">
+        select * from evaluate t
+        <include refid="where"/>
+    </select>
+    <sql id="where">
+        <where>
+            <if test="searchKey != null and searchKey != '' and searchKey=='id'">
+                and t.id like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='orderId'">
+                and t.order_id = #{searchValue}
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='userId'">
+                and t.user_id = #{searchValue}
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='goodsId'">
+                and t.goods_id = #{searchValue}
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='evaluate'">
+                and t.evaluate like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='score'">
+                and t.score like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='transportationScore'">
+                and t.transportation_score like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='service'">
+                and t.service like concat('%', #{searchValue}, '%')
+            </if>
+            and data_flag = 1
+        </where>
+    </sql>
+</mapper>

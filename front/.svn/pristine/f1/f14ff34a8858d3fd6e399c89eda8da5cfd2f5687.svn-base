@@ -1,0 +1,149 @@
+{
+  "id": "",
+  "name": "",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "17103475",
+      "name": "article-line",
+      "font_class": "article-line",
+      "unicode": "e75b",
+      "unicode_decimal": 59227
+    },
+    {
+      "icon_id": "17103476",
+      "name": "article-fill",
+      "font_class": "article-fill",
+      "unicode": "e75c",
+      "unicode_decimal": 59228
+    },
+    {
+      "icon_id": "17103477",
+      "name": "bill-fill",
+      "font_class": "bill-fill",
+      "unicode": "e75d",
+      "unicode_decimal": 59229
+    },
+    {
+      "icon_id": "17103478",
+      "name": "book-2-fill",
+      "font_class": "book-2-fill",
+      "unicode": "e75e",
+      "unicode_decimal": 59230
+    },
+    {
+      "icon_id": "17103479",
+      "name": "book-3-fill",
+      "font_class": "book-3-fill",
+      "unicode": "e75f",
+      "unicode_decimal": 59231
+    },
+    {
+      "icon_id": "17103489",
+      "name": "booklet-fill",
+      "font_class": "booklet-fill",
+      "unicode": "e760",
+      "unicode_decimal": 59232
+    },
+    {
+      "icon_id": "17103490",
+      "name": "book-3-line",
+      "font_class": "book-3-line",
+      "unicode": "e761",
+      "unicode_decimal": 59233
+    },
+    {
+      "icon_id": "17103491",
+      "name": "clipboard-fill",
+      "font_class": "clipboard-fill",
+      "unicode": "e762",
+      "unicode_decimal": 59234
+    },
+    {
+      "icon_id": "17103505",
+      "name": "file-3-fill",
+      "font_class": "file-3-fill",
+      "unicode": "e763",
+      "unicode_decimal": 59235
+    },
+    {
+      "icon_id": "17103506",
+      "name": "file-3-line",
+      "font_class": "file-3-line",
+      "unicode": "e764",
+      "unicode_decimal": 59236
+    },
+    {
+      "icon_id": "17103507",
+      "name": "file-4-fill",
+      "font_class": "file-4-fill",
+      "unicode": "e765",
+      "unicode_decimal": 59237
+    },
+    {
+      "icon_id": "17103508",
+      "name": "file-4-line",
+      "font_class": "file-4-line",
+      "unicode": "e766",
+      "unicode_decimal": 59238
+    },
+    {
+      "icon_id": "17103625",
+      "name": "folder-open-fill",
+      "font_class": "folder-open-fill",
+      "unicode": "e784",
+      "unicode_decimal": 59268
+    },
+    {
+      "icon_id": "17103626",
+      "name": "folder-open-line",
+      "font_class": "folder-open-line",
+      "unicode": "e785",
+      "unicode_decimal": 59269
+    },
+    {
+      "icon_id": "17103656",
+      "name": "newspaper-fill",
+      "font_class": "newspaper-fill",
+      "unicode": "e78c",
+      "unicode_decimal": 59276
+    },
+    {
+      "icon_id": "17103657",
+      "name": "newspaper-line",
+      "font_class": "newspaper-line",
+      "unicode": "e78d",
+      "unicode_decimal": 59277
+    },
+    {
+      "icon_id": "17103658",
+      "name": "numbers-fill",
+      "font_class": "numbers-fill",
+      "unicode": "e78e",
+      "unicode_decimal": 59278
+    },
+    {
+      "icon_id": "17103660",
+      "name": "pages-line",
+      "font_class": "pages-line",
+      "unicode": "e78f",
+      "unicode_decimal": 59279
+    },
+    {
+      "icon_id": "17103661",
+      "name": "pages-fill",
+      "font_class": "pages-fill",
+      "unicode": "e790",
+      "unicode_decimal": 59280
+    },
+    {
+      "icon_id": "17104050",
+      "name": "shopping-cart-fill",
+      "font_class": "shopping-cart-fill",
+      "unicode": "e7b8",
+      "unicode_decimal": 59320
+    }
+  ]
+}

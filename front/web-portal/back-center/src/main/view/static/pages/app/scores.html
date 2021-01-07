@@ -1,0 +1,142 @@
+<div class="layui-card">
+    <div class="layui-card-body">
+        <div class="layui-form toolbar">
+            积分来源：
+            <select id="dataSrc-search-key" lay-filter="dataSrc-search" autocomplete="off">
+                <option value="">-请选择-</option>
+            </select>
+            积分标识：
+            <select id="scoreType-search-key" lay-filter="scoreType-search" autocomplete="off">
+                <option value="">-请选择-</option>
+                <option value="1">收入</option>
+                <option value="0">支出</option>
+            </select>
+            记录时间:
+            <div class="layui-input-inline">
+                <input class="layui-input" id="scores_create_time" type="text" autocomplete="off"
+                       placeholder=" 开始 - 结束">
+            </div>
+            搜索：
+            <select id="userScores-search-key">
+                <option value="">-请选择-</option>
+                <option value="userId">用户编号</option>
+                <option value="dataId">来源记录编号</option>
+            </select>&emsp;
+            <input id="userScores-edit-value" class="layui-input search-input" type="text" placeholder="输入关键字"/>&emsp;
+            <button id="userScores-btn-search" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>搜索
+            </button>
+        </div>
+
+        <!-- 数据表格 -->
+        <table class="layui-table" id="userScores-table" lay-filter="userScores-table"></table>
+    </div>
+</div>
+
+<script>
+    layui.use(['form', 'table', 'util', 'config', 'laydate','admin', 'formSelects'], function () {
+        var form = layui.form;
+        var table = layui.table;
+        var config = layui.config;
+        var laydate = layui.laydate;
+        var layer = layui.layer;
+        var util = layui.util;
+        var admin = layui.admin;
+        var formSelects = layui.formSelects;
+
+        //通过时间范围查询
+        laydate.render({
+            elem: '#scores_create_time',
+            trigger: 'click',
+            range: true,
+            theme: '#1e9fff',
+            done: function (value, date, endDate) {
+                table.reload('userScores-table', {where: {createTime: value}});
+            }
+        });
+
+        select('api-user/dictdetail/list', 'c71d1762ae1b409db8617298246acdbc', '#dataSrc-search-key')
+        //渲染表格
+        table.render({
+            elem: '#userScores-table',
+            url: config.base_server + 'api-user/userscores/list',
+            where: {
+                access_token: config.getToken().access_token
+            },
+            page: {first: '首页',last: '尾页'},
+            cols: [[
+                {type: 'numbers'},
+                {align: 'center', field: 'userId', sort: true, title: '用户编号', width: '180'},
+                {align: 'center', field: 'dataId', sort: true, title: '来源记录编号', width: '180'},
+                {
+                    align: 'center', field: 'score', sort: true, templet: function (d) {
+                        return d.score + '分';
+                    }, title: '积分总数', width: '120'
+                },
+                {
+                    align: 'center', field: 'change', sort: true, templet: function (d) {
+                        if (d.change != null) {
+                            return d.change + '分';
+                        }else{
+                            return d.change;
+                        }
+                    }, title: '积分变动', width: '120'
+                },
+                {align: 'center', field: 'remarks', sort: true, title: '描述', width: '220'},
+                {
+                    align: 'center', field: 'dataSrc', sort: true, templet: function (d) {
+                        const order = '<span class="layui-badge" style="background-color:#ff5722;">订单</span>'
+                        const back = '<span class="layui-badge" style="background-color:#2196f3;">评价</span>'
+                        const rejection = '<span class="layui-badge" style="background-color:#ffc107;">订单取消返还</span>'
+                        const evaluate = '<span class="layui-badge" style="background-color:#e53935;">拒收返还</span>'
+                        switch (d.dataSrc) {
+                            case 1 :
+                                return order;
+                                break;
+                            case 2:
+                                return back;
+                                break;
+                            case 3:
+                                return rejection;
+                                break;
+                            case 4:
+                                return evaluate;
+                                break;
+                            default:
+                                return '';
+                                break;
+                        }
+                    }, title: '积分来源', width: '180'
+                },
+                {
+                    align: 'center', field: 'scoreType', sort: true, templet: function (d) {
+                        const income = '<span class="layui-badge" style="background-color:#34a853;">收入</span>'
+                        const pay = '<span class="layui-badge" style="background-color:#ea4335;">支出</span>'
+                        return d.scoreType == 1 ? income : pay;
+                    }, title: '积分标识', width: '150'
+                },
+                {align: 'center', field: 'createTime', sort: true, title: '记录时间', width: '180'}
+            ]]
+        });
+
+        // 搜索按钮点击事件
+        $('#userScores-btn-search').click(function () {
+            var key = $('#userScores-search-key').val();
+            var value = $('#userScores-edit-value').val();
+            table.reload('userScores-table', {where: {searchKey: key, searchValue: value}});
+        });
+
+        // 监听上架状态下拉框
+        form.on('select(dataSrc-search)', function (e) {
+            var value = e.value;
+            table.reload('userScores-table', {where: {dataSrc: value}});
+        });
+
+        // 监听上架状态下拉框
+        form.on('select(scoreType-search)', function (e) {
+            var value = e.value;
+            table.reload('userScores-table', {where: {scoreType: value}});
+        });
+
+    });
+
+</script>

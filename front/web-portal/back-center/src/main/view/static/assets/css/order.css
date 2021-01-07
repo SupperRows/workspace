@@ -1,0 +1,86 @@
+/*详情弹窗开始*/
+.detail-box {
+    width: 100%;
+    min-height: 500px;
+    background-color: #dddddd;
+    padding-bottom: 20px;
+}
+
+.basic-info {
+    width: 100%;
+    background-color: #fff;
+    border-radius: 7px;
+    margin-top: 10px;
+    padding-bottom: 20px;
+}
+
+.basic-info > table {
+    width: 97%;
+    margin: auto;
+}
+
+.detail-title {
+    width: 97%;
+    padding-left: 20px;
+    line-height: 40px;
+    font-size: 12pt;
+    /*border-bottom: 1px solid #e6ebf5;*/
+}
+.demo-class{
+    background-color: #dddddd;
+}
+.goods-card{
+    width: 100%;
+    height: 150px;
+    margin-top: 10px;
+    display: flex;
+    flex-direction: row;
+}
+.goods-card>.goods-image{
+    width: 120px;
+    height: 120px;
+    margin-left: 15px;
+    margin-top: 15px;
+}
+.goods-card>.goods-image>img{
+    border-radius: 5px;
+}
+.goods-card>.goods-intrdouce{
+    width: 650px;
+    height: 120px;
+    margin-left: 15px;
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+}
+.goods-card>.goods-intrdouce>text{
+    color: #444;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+/*结束*/
+
+/*发货弹窗样式开始*/
+.receive-info{
+    width: 100%;
+    padding-top: 20px;
+    padding-left: 40px;
+}
+
+.receive-info>h3{
+    font-weight: 600;
+    color: #444;
+}
+
+.receive-info>div{
+    display: flex;
+    flex-direction: row;
+    margin-top: 10px;
+    color: #666;
+    line-height: 15px;
+}
+
+/*结束*/

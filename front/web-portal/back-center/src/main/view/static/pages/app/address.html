@@ -1,0 +1,267 @@
+<div class="layui-card">
+    <div class="layui-card-body">
+        <div class="layui-form toolbar">
+            搜索：
+            <select id="userAddress-search-key">
+                <option value="">-请选择-</option>
+                <option value="userId">用户编号</option>
+                <option value="userName">收件人</option>
+                <option value="userPhone">联系方式</option>
+            </select>&emsp;
+            <input id="userAddress-edit-value" class="layui-input search-input" type="text" placeholder="输入关键字"/>&emsp;
+            <button id="userAddress-btn-search" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>搜索
+            </button>
+        </div>
+
+        <!-- 数据表格 -->
+        <table class="layui-table" id="userAddress-table" lay-filter="userAddress-table"></table>
+    </div>
+</div>
+
+<!-- 表单弹窗 -->
+<script type="text/html" id="userAddress-model">
+    <form id="userAddress-form" lay-filter="userAddress-form" class="layui-form model-form">
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">用户编号</label>
+                <div class="layui-input-block">
+                    <input name="user_id" placeholder="请输入用户编号" type="text"
+                           class="layui-input" maxlength="20"
+                           lay-verify="required" required/>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">收件人</label>
+                <div class="layui-input-block">
+                    <input name="user_name" placeholder="请输入收件人" type="text"
+                           class="layui-input" maxlength="20"
+                           lay-verify="required" required/>
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">联系方式</label>
+                <div class="layui-input-block">
+                    <input name="user_phone" placeholder="请输入联系方式" type="text"
+                           class="layui-input" maxlength="20"
+                           lay-verify="required" required/>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">省/直辖市/特别行政区</label>
+            <div class="layui-input-block">
+                <input name="province" placeholder="请输入省/直辖市/特别行政区" type="text"
+                       class="layui-input" maxlength="20"
+                       lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">城市</label>
+                <div class="layui-input-block">
+                    <input name="city" placeholder="请输入城市" type="text"
+                           class="layui-input" maxlength="20"
+                           lay-verify="required" required/>
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">区县</label>
+                <div class="layui-input-block">
+                    <input name="area" placeholder="请输入区县" type="text"
+                           class="layui-input" maxlength="20"
+                           lay-verify="required" required/>
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">乡镇街道</label>
+                <div class="layui-input-block">
+                    <input name="twon" placeholder="请输入乡镇街道" type="text"
+                           class="layui-input" maxlength="20"
+                           lay-verify="required" required/>
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">详细地址</label>
+            <div class="layui-input-block">
+                <input name="address" placeholder="请输入详细地址" type="text"
+                       class="layui-input" maxlength="20"
+                       lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">是否默认有效地址</label>
+            <div class="layui-input-block">
+                <input name="isDefault" id="isDefault" type="checkbox" lay-filter="isDefault"
+                       lay-skin="switch" lay-text="是|否">
+            </div>
+        </div>
+    </form>
+</script>
+
+<!-- 表格操作列 -->
+<script type="text/html" id="userAddress-table-bar">
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="edit">修改</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+<script>
+    layui.use(['form', 'table', 'util', 'config', 'admin', 'formSelects'], function () {
+        var form = layui.form;
+        var table = layui.table;
+        var config = layui.config;
+        var layer = layui.layer;
+        var util = layui.util;
+        var admin = layui.admin;
+        var formSelects = layui.formSelects;
+        //渲染表格
+        table.render({
+            elem: '#userAddress-table',
+            url: config.base_server + 'api-user/useraddress/list',
+            where: {
+                access_token: config.getToken().access_token,
+            },
+            page: {first: '首页',last: '尾页'},
+            cols: [[
+                {type: 'numbers'},
+                {align: 'center', field: 'userId', title: '用户编号',width:'120'},
+                {align: 'center', field: 'userName', title: '收件人',width:'120'},
+                {align: 'center', field: 'userPhone', title: '联系方式',width:'120'},
+                {align: 'center', field: 'province', title: '省/直辖市/特别行政区',width:'180'},
+                {align: 'center', field: 'city', title: '城市',width:'180'},
+                {align: 'center', field: 'area', title: '区县',width:'180'},
+                {align: 'center', field: 'twon', title: '乡镇街道',width:'180'},
+                {align: 'center', field: 'address', title: '详细地址',width:'180'},
+                {
+                    align: 'center', field: 'isdefault', sort: true, title: '是否默认', templet: function (d) {
+                        // 是否默认有效地址(0:否 1:是)
+                        return d.isdefault == 1 ? '是' : '否';
+                    },width:'120'
+                },
+                {align: 'center', field: 'createTime', sort: true, title: '创建时间', width: 180},
+                {fixes:'right',align: 'center', toolbar: '#userAddress-table-bar', title: '操作', width: 180}
+            ]]
+        });
+
+
+        // 工具条点击事件
+        table.on('tool(userAddress-table)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'edit') { //修改
+                doUpdate(data);
+            } else if (obj.event === 'del') { //删除
+                doDelete(obj);
+            }
+        });
+
+        // 搜索按钮点击事件
+        $('#userAddress-btn-search').click(function () {
+            var key = $('#userAddress-search-key').val();
+            var value = $('#userAddress-edit-value').val();
+            table.reload('userAddress-table', {where: {searchKey: key, searchValue: value}});
+        });
+
+        // 删除
+        var doDelete = function (obj) {
+            layer.confirm('确定要删除吗？', function (i) {
+                layer.close(i);
+                layer.load(2);
+                admin.req('api-user/useraddress/delete/'+obj.data.addressId, {}, function (data) {
+                    layer.closeAll('loading');
+                    if (data.code == 0) {
+                        layer.msg(data.msg, {icon: 1, time: 500});
+                        obj.del();
+                    } else {
+                        layer.msg(data.msg, {icon: 2, time: 500});
+                    }
+                }, 'DELETE');
+            });
+        };
+
+        form.on('switch(isDefault)', function (data) {
+            var checked = data.elem.checked;
+            if (checked == true) {
+                $("#isDefault").val(1);
+            } else if (checked == false) {
+                $("#isDefault").val(0);
+            }
+        })
+
+        var doUpdate = function (data) {
+            layer.open({
+                type: 1,
+                area: ['60%'],
+                title: ['编辑收件地址'],
+                btn: ['保存', '取消'],
+                btnAlign: 'c',
+                shade: 0.5,
+                content: $('#userAddress-model').html(),
+                success: function (layero, index) {
+                    //数据回写
+                    if (data.isdefault == 0) {
+                        $("#isDefault").val(0).prop("checked", false)
+                    } else if (data.isdefault == 1) {
+                        $("#isDefault").val(1).prop("checked", true)
+                    }
+                    layui.form.render();
+                    $("input[name='user_id']").val(data.userId).attr('readonly', 'readonly');
+                    $("input[name='user_name']").val(data.userName);
+                    $("input[name='user_phone']").val(data.userPhone);
+                    $("input[name='province']").val(data.province);
+                    $("input[name='city']").val(data.city);
+                    $("input[name='area']").val(data.area);
+                    $("input[name='twon']").val(data.twon);
+                    $("input[name='address']").val(data.address);
+                },
+                yes: function (index, layero) {
+                    const userName = $("input[name='user_name']").val();
+                    const userPhone = $("input[name='user_phone']").val();
+                    const province = $("input[name='province']").val();
+                    const city = $("input[name='city']").val();
+                    const area = $("input[name='area']").val();
+                    const twon = $("input[name='twon']").val();
+                    const address = $("input[name='address']").val();
+                    const isdefault = $("input[name='isDefault']").val();
+                    const reqdata = {
+                        addressId: data.addressId,
+                        userId: data.userId,
+                        userName: userName,
+                        userPhone: userPhone,
+                        province: province,
+                        city: city,
+                        area: area,
+                        twon: twon,
+                        address: address,
+                        isdefault: isdefault,
+                        dataFlag: 1
+                    }
+                    admin.req('api-user/useraddress/update', JSON.stringify(reqdata), function (res) {
+                        if (res.code == 0) {
+                            layer.alert(res.msg, {
+                                icon: 1,
+                                title: '提示'
+                            }, function (i) {
+                                layer.close(i);
+                                layer.close(index); // 关闭弹出层
+                                $("#userAddress-form")[0].reset() // 重置form
+                            })
+                            table.reload('userAddress-table', { // 重载表格
+                                page: {
+                                    curr: 1
+                                }
+                            })
+                        } else {
+                            layer.msg(res.msg, {
+                                icon: 5
+                            });
+                        }
+                    }, 'POST')
+                }
+            })
+        };
+
+    });
+
+</script>

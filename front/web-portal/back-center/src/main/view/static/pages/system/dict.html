@@ -1,0 +1,395 @@
+<link rel="stylesheet" href="module/dtree/dtree.css"/>
+<link rel="stylesheet" href="module/dtree/font/dtreefont.css"/>
+<style>
+    #ltTree {
+        height: 535px;
+        overflow: auto;
+    }
+
+    @media screen and (max-width: 750px) {
+        #ltTree {
+            height: auto;
+        }
+    }
+
+    .toolbar {
+        padding-left: 20px;
+        padding-top: 20px;
+    }
+
+</style>
+
+<!-- 关闭Tab时顶部标题 -->
+<!--<div class="layui-body-header">-->
+<!--    <span class="layui-body-header-title">数据字典</span>-->
+<!--    <span class="layui-breadcrumb pull-right">-->
+<!--        <a href="#/console/console1">首页</a>-->
+<!--        <a><cite>数据字典</cite></a>-->
+<!--    </span>-->
+<!--</div>-->
+
+<!-- 正文开始 -->
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <!-- 左树 -->
+        <div class="layui-col-sm12 layui-col-md4 layui-col-lg3">
+            <div class="lft-toobar" style="width: 100%;height: 50px;">
+                <button class="layui-btn layui-btn-sm layui-btn-radius layui-btn-normal" lay-demo="addDept"><i class="layui-icon">&#xe654;</i>添加部门</button>
+                <button class="layui-btn layui-btn-sm layui-btn-radius layui-btn-normal" lay-demo="gain">获取选中节点</button>
+            </div>
+            <div class="layui-card">
+                <div class="layui-card-body mini-bar" id="ltTree"></div>
+            </div>
+        </div>
+        <!-- 右表 -->
+        <div class="layui-col-sm12 layui-col-md8 layui-col-lg9">
+            <div class="layui-card">
+                <div class="layui-form toolbar ">
+                    <button id="dictTb-btn-add" class=" layui-btn icon-btn layui-btn-warm"><i class="layui-icon">&#xe654;</i>添加字典类型
+                    </button>
+                </div>
+                <div class="layui-card-body" style="height: 535px;">
+                    <table class="layui-table" id="rtTable" lay-filter="rtTable"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 表格操作列 -->
+<script type="text/html" id="rtTableBar">
+    <!-- 表格操作列 -->
+    <button id="dictTb-btn-edit" class="layui-btn layui-btn-primary layui-btn-xs" lay-event="edit">修改</button>
+    <button id="dictTb-btn-del" class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</button>
+</script>
+
+<!-- 表单弹窗 -->
+<script type="text/html" id="dictTb-model">
+    <form id="dict-form" lay-filter="dict-form" class="layui-form model-form">
+        <div class="layui-form-item">
+            <label class="layui-form-label">数据值</label>
+            <div class="layui-input-block">
+                <input type="text" name="value" autocomplete="off"
+                       placeholder="请输入数据值" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">标签名</label>
+            <div class="layui-input-block">
+                <input type="text" name="label" autocomplete="off"
+                       placeholder="请输入标签名" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">类型</label>
+            <div class="layui-input-block">
+                <input type="text" name="type" autocomplete="off"
+                       placeholder="请输入类型" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">描述</label>
+            <div class="layui-input-block">
+					<textarea class="layui-textarea" name="description" maxlength="50"
+                              placeholder="请输入内容，字数在50字以内。"></textarea>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">备注信息</label>
+            <div class="layui-input-block">
+					<textarea class="layui-textarea" name="remarks" maxlength="50"
+                              placeholder="请输入内容，字数在50字以内。"></textarea>
+            </div>
+        </div>
+    </form>
+</script>
+
+<!-- js部分 -->
+<script>
+    layui.use(['layer', 'form', 'table', 'util', 'dtree', 'admin'], function () {
+        var $ = layui.jquery;
+        var layer = layui.layer;
+        var form = layui.form;
+        var table = layui.table;
+        var util = layui.util;
+        var config = layui.config;
+        var dtree = layui.dtree;
+        var admin = layui.admin;
+        var tableObj = [];
+
+        // 添加按钮绑定权限
+        if (!admin.hasPerm('sys_dict:sysdict:sav')) {
+            $('#dictTb-btn-add').hide();
+        }
+
+        //加载左树列表
+        admin.req('api-user/dicttree/treeList', {}, function (res) {
+            tableObj = res.data;
+        }, 'GET');
+
+        // 树形渲染
+        setTimeout(function () {
+            dtree.render({
+                elem: '#ltTree',
+                data: tableObj,
+                toolbar: true,
+                skin: "laySimple",
+                menubar: true,
+                toolbarBtn: [
+                    [
+                        {"label": "备注信息", "name": "remark", "type": "textarea"},
+                    ]
+                ],
+                toolbarFun: {
+                    addTreeNode: function (treeNode, $div) {
+                        var reqdata = {
+                            dictName: treeNode.addNodeName
+                        }
+                        admin.req('api-user/dict/save', JSON.stringify(reqdata), function (res) {
+                            if (res.code == 0) {
+                                DemoTree.changeTreeNodeAdd(treeNode.nodeId / param / true / false / "refresh");
+                                layer.alert(res.msg, {
+                                    icon: 1,
+                                    title: '提示'
+                                })
+                            } else {
+                                layer.msg(res.msg)
+                            }
+                        }, "PUT")
+                    },
+                    editTreeNode: function (treeNode, $div) {
+                        var reqdata = {
+                            dictId: treeNode.nodeId,
+                            dictName: treeNode.editNodeName
+                        }
+                        admin.req('api-user/dict/update', JSON.stringify(reqdata), function (res) {
+                            if (res.code == 0) {
+                                layer.alert(res.msg, {
+                                    icon: 1,
+                                    title: '提示'
+                                })
+                            } else {
+                                layer.msg(res.msg)
+                            }
+                        }, "POST")
+                    },
+                    delTreeNode: function (treeNode, $div) {
+                        if (treeNode.nodeId == 'afd35863cf814ac6b9204e9a357a572b') {
+                            layer.msg('默认选项不可删除')
+                        } else {
+                            admin.req('api-user/dict/deleteAll/' + treeNode.nodeId, {}, function (res) {
+                                if (res.code == 0) {
+                                    layer.alert(res.msg, {
+                                        icon: 1,
+                                        title: '提示'
+                                    })
+                                } else {
+                                    layer.msg(res.msg)
+                                }
+                            }, "DELETE")
+                        }
+                    }
+                }
+            });
+        }, 300);
+        //点击选中当前列表dictId
+        var Id = '';
+        // 树形点击事件
+        table.render({
+            elem: '#rtTable',
+            url: config.base_server + 'api-user/dictdetail/findListByDictId',
+            method: 'GET',
+            where: {
+                access_token: config.getToken().access_token,
+                dictId: null
+            },
+            page: {first: '首页', last: '尾页'},
+            cols: [[
+                {type: 'numbers'},
+                {align: 'center', field: 'value', sort: true, title: '数据值', width: '100'},
+                {align: 'center', field: 'label', sort: true, title: '标签名', width: '120'},
+                {align: 'center', field: 'type', sort: true, title: '类型', width: '100'},
+                {align: 'center', field: 'description', sort: true, title: '描述', width: '120'},
+                {align: 'center', field: 'remarks', sort: true, title: '备注信息', width: '120'},
+                {field: 'lastUpdateTime', width: 180, sort: true, title: '更新时间', align: 'center',},
+                {field: 'createTime', width: 180, sort: true, title: '创建时间', align: 'center',},
+                {fixed: 'right', align: 'center', toolbar: '#rtTableBar', title: '操作', width: 150}
+            ]]
+        });
+
+        dtree.on('node("ltTree")', function (obj) {
+            var data = obj.param;
+            // debugger;
+            Id = data.nodeId;
+            // 渲染表格
+            table.render({
+                elem: '#rtTable',
+                url: config.base_server + 'api-user/dictdetail/findListByDictId',
+                method: 'GET',
+                where: {
+                    access_token: config.getToken().access_token,
+                    dictId: data.nodeId
+                },
+                page: {first: '首页', last: '尾页'},
+                cols: [[
+                    {type: 'numbers'},
+                    {align: 'center', field: 'value', sort: true, title: '数据值', width: '100'},
+                    {align: 'center', field: 'label', sort: true, title: '标签名', width: '120'},
+                    {align: 'center', field: 'type', sort: true, title: '类型', width: '100'},
+                    {align: 'center', field: 'description', sort: true, title: '描述', width: '120'},
+                    {align: 'center', field: 'remarks', sort: true, title: '备注信息', width: '120'},
+                    {field: 'lastUpdateTime', width: 180, sort: true, title: '更新时间', align: 'center',},
+                    {field: 'createTime', width: 180, sort: true, title: '创建时间', align: 'center',},
+                    {fixed: 'right', align: 'center', toolbar: '#rtTableBar', title: '操作', width: 150}
+                ]]
+            });
+            // 监听工具条
+            table.on('tool(rtTable)', function (obj) {
+                var data = obj.data; //获得当前行数据
+                var layEvent = obj.event; //获得 lay-event 对应的值
+
+                if (layEvent === 'edit') { // 查看
+                    doUpdate(data)
+                } else if (layEvent === 'del') { // 删除
+                    doDelete(obj);
+                }
+            });
+
+            // 添加按钮点击事件
+            $('#dictTb-btn-add').click(function () {
+                if (Id == 'afd35863cf814ac6b9204e9a357a572b') {
+                    layer.msg('默认选项不可添加')
+                } else if (Id != 'afd35863cf814ac6b9204e9a357a572b') {
+                    debugger;
+                    doSave();
+                    table.reload('rtTable', {
+                        page: {
+                            curr: 0
+                        }
+                    })
+                }
+            });
+
+            //添加
+            var doSave = function () {
+                layer.open({
+                    type: 1,
+                    title: '添加字典详情信息',
+                    maxmin: true,
+                    area: ['40%'],
+                    btnAlign: 'c',
+                    content: $('#dictTb-model').html(),
+                    btn: ['确定', '取消'],
+                    id: 'LAY_layuipro',
+                    yes: function (index, layero) {
+                        const value = $("input[name='value']").val();
+                        const label = $("input[name='label']").val();
+                        const type = $("input[name='type']").val();
+                        const remarks = $("textarea[name='remarks']").val();
+                        const description = $("textarea[name='description']").val();
+                        const reqdata = {
+                            dictId: Id,
+                            value: value,
+                            label: label,
+                            type: type,
+                            remarks: remarks,
+                            description: description
+                        }
+                        admin.req('api-user/dictdetail/save', JSON.stringify(reqdata), function (res) {
+                            if (res.code == 0) {
+                                layer.alert(res.msg, {
+                                    icon: 1,
+                                    title: '提示'
+                                }, function (i) {
+                                    layer.close(i);
+                                    layer.close(index);
+                                    $("#dict-form")[0].reset()
+                                })
+                            } else {
+                                layer.msg(res.msg)
+                            }
+                        }, "PUT")
+                    }
+                })
+            }
+
+            // 删除
+            var doDelete = function (obj) {
+                layer.confirm('确定要删除吗？', function (i) {
+                    layer.close(i);
+                    layer.load(2);
+                    admin.req('api-user/dictdetail/delete/' + obj.data.id, {}, function (data) {
+                        layer.closeAll('loading');
+                        if (data.code == 0) {
+                            layer.msg(data.msg, {icon: 1, time: 500});
+                            obj.del();
+                        } else {
+                            layer.msg(data.msg, {icon: 2, time: 500});
+                        }
+                    }, 'DELETE');
+                });
+            };
+
+            //编辑
+            var doUpdate = function (data) {
+                layer.open({
+                    type: 1,
+                    area: ['30%'],
+                    title: ['编辑字典详情信息'],
+                    btn: ['保存', '取消'],
+                    shadeClose: true,
+                    btnAlign: 'c',
+                    shade: 0.5,
+                    maxmin: true,
+                    content: $('#dictTb-model').html(),
+                    success: function (layero, index) {
+                        $("input[name='value']").val(data.value);
+                        $("input[name='label']").val(data.label);
+                        $("input[name='type']").val(data.type);
+                        $("textarea[name='remarks']").val(data.remarks);
+                        $("textarea[name='description']").val(data.description);
+                    },
+                    yes: function (index, layero) {
+                        const value = $("input[name='value']").val();
+                        const label = $("input[name='label']").val();
+                        const type = $("input[name='type']").val();
+                        const remarks = $("textarea[name='remarks']").val();
+                        const description = $("textarea[name='description']").val();
+                        const reqdata = {
+                            id: data.id,
+                            dictId: data.dictId,
+                            value: value,
+                            label: label,
+                            type: type,
+                            remarks: remarks,
+                            description: description
+                        }
+                        admin.req('api-user/dictdetail/update', JSON.stringify(reqdata), function (res) {
+                            if (res.code == 0) {
+                                layer.alert(res.msg, {
+                                    icon: 1,
+                                    title: '提示'
+                                }, function (i) {
+                                    layer.close(i);
+                                    layer.close(index); // 关闭弹出层
+                                    $("#dict-form")[0].reset() // 重置form
+                                })
+                                table.reload('rtTable', { // 重载表格
+                                    page: {
+                                        curr: 1
+                                    }
+                                })
+                            } else {
+                                layer.msg(res.msg, {
+                                    icon: 5
+                                });
+                            }
+                        }, "POST")
+                    }
+                });
+            }
+
+        });
+
+    });
+</script>

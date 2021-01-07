@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.open.capacity.user.dao.ClassfiyDao">
+
+    <resultMap type="com.open.capacity.user.model.Classfiy" id="classfiyMap">
+        <result property="classfiyId" column="classfiy_id"/>
+        <result property="classfiyName" column="classfiy_name"/>
+        <result property="imgUrl" column="img_url"/>
+        <result property="parentId" column="parent_id"/>
+        <result property="isShow" column="is_show"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="createTime" column="create_time"/>
+        <result property="dataFlag" column="data_flag"/>
+    </resultMap>
+
+    <insert id="save" parameterType="com.open.capacity.user.model.Classfiy">
+        insert into classfiy(classfiy_id,classfiy_name,img_url,parent_id,is_show,create_time)
+                  values (#{ classfiyId},#{ classfiyName},#{ imgUrl},#{ parentId},#{ isShow},now())
+    </insert>
+
+    <update id="update" parameterType="com.open.capacity.user.model.Classfiy">
+        update classfiy
+        <set>
+            <if test="classfiyName != null">
+                classfiy_name = #{classfiyName},
+            </if>
+            <if test="imgUrl != null">
+                img_url = #{imgUrl},
+            </if>
+            <if test="parentId != null">
+                parent_id = #{parentId},
+            </if>
+            <if test="isShow != null">
+                is_show = #{isShow},
+            </if>
+            <if test="dataFlag != null">
+                data_flag = #{dataFlag},
+            </if>
+            update_time = now(),
+        </set>
+        where classfiy_id = #{classfiyId}
+    </update>
+
+    <delete id="delete" parameterType="String" flushCache="true">
+        delete from classfiy where classfiy_id = #{classfiyId}
+    </delete>
+
+    <select id="findAll" parameterType="map" resultMap="classfiyMap">
+        select * from classfiy t
+        <include refid="where"/>
+    </select>
+    <sql id="where">
+        <where>
+            <if test="searchKey != null and searchKey != '' and searchKey=='classfiyId'">
+                and t.classfiy_id like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='classfiyName'">
+                and t.classfiy_name like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='imgUrl'">
+                and t.img_url like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='parentId'">
+                and t.parent_id like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='isShow'">
+                and t.is_show like concat('%', #{searchValue}, '%')
+            </if>
+            and t.data_flag = 1
+        </where>
+    </sql>
+</mapper>

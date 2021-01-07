@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.open.capacity.user.dao.GoodsDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.open.capacity.user.model.Goods" id="goodsTbMap">
+        <result property="id" column="id"/>
+        <result property="goodsId" column="goods_id"/>
+        <result property="goodsIntroduce" column="goods_introduce"/>
+        <result property="pagePrice" column="page_price"/>
+        <result property="purchasePrice" column="purchase_price"/>
+        <result property="goodsModel" column="goods_model"/>
+        <result property="goodsImg" column="goods_img"/>
+        <result property="pageUrl" column="page_url"/>
+        <result property="promotionTime" column="promotion_time"/>
+        <result property="classfiyId" column="classfiy_id"/>
+        <result property="brandsId" column="brands_id"/>
+        <result property="createTime" column="create_time"/>
+        <result property="isSale" column="is_sale"/>
+        <result property="isHot" column="is_hot"/>
+        <result property="visitNum" column="visit_num"/>
+        <result property="appraiseNum" column="appraise_num"/>
+    </resultMap>
+
+    <insert id="save" parameterType="com.open.capacity.user.model.Goods">
+        insert into goods(id,goods_id,goods_introduce,page_price,purchase_price,goods_model,goods_img,
+        page_url,promotion_time,classfiy_id,brands_id,create_time,is_sale,is_hot,visit_num,appraise_num) values (
+        #{ id},#{ goodsId},#{ goodsIntroduce},#{ pagePrice},#{ purchasePrice},#{ goodsModel},#{ goodsImg},
+        #{ pageUrl},#{ promotionTime},#{ classfiyId},#{ brandsId},now(),#{ isSale},#{ isHot},
+        #{ visitNum},#{appraiseNum})
+    </insert>
+
+    <update id="update" parameterType="com.open.capacity.user.model.Goods">
+        update goods
+        <set>
+            <if test="goodsId != null">
+                goods_id = #{goodsId},
+            </if>
+            <if test="goodsIntroduce != null">
+                goods_introduce = #{goodsIntroduce},
+            </if>
+            <if test="pagePrice != null">
+                page_price = #{pagePrice},
+            </if>
+            <if test="purchasePrice != null">
+                purchase_price = #{purchasePrice},
+            </if>
+            <if test="goodsModel != null">
+                goods_model = #{goodsModel},
+            </if>
+            <if test="goodsImg != null">
+                goods_img = #{goodsImg},
+            </if>
+            <if test="pageUrl != null">
+                page_url = #{pageUrl},
+            </if>
+            <if test="promotionTime != null">
+                promotion_time = #{promotionTime},
+            </if>
+            <if test="classfiyId != null">
+                classfiy_id = #{classfiyId},
+            </if>
+            <if test="brandsId != null">
+                brands_id = #{brandsId},
+            </if>
+            <if test="isSale != null">
+                is_sale = #{isSale},
+            </if>
+            <if test="isHot != null">
+                is_hot = #{isHot},
+            </if>
+            <if test="visitNum != null">
+                visit_num = #{visitNum},
+            </if>
+            <if test="appraiseNum != null">
+                appraise_num = #{appraiseNum},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="long" flushCache="true">
+        delete from goods where id = #{id}
+    </delete>
+
+    <select id="findAll" resultMap="goodsTbMap">
+        select * from goods t
+        <include refid="where"/>
+    </select>
+    <sql id="where">
+        <where>
+            <if test="id != null and id != ''">
+                and t.id = #{id}
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='goodsId'">
+                and t.goods_id = #{searchValue}
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='goodsIntroduce'">
+                and t.goods_introduce like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='pagePrice'">
+                and t.page_price like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='purchasePrice'">
+                and t.purchase_price like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='goodsModel'">
+                and t.goods_model like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='goodsImg'">
+                and t.goods_img like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='pageUrl'">
+                and t.page_url like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="promotionTime != null and promotionTime != ''">
+                t.promotion_time between substring_index(#{promotionTime}, ' - ', 1) and
+                substring_index(#{promotionTime}, ' - ', -1)
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey == 'classfiyId'">
+                and t.classfiy_id = #{searchValue}
+            </if>
+            <if test="orderByPrice != null and orderByPrice != '' and orderByPrice == 'asc'">
+                order by t.purchase_price asc
+            </if>
+            <if test="orderByPrice != null and orderByPrice != '' and orderByPrice == 'desc'">
+                order by t.purchase_price desc
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='brandsId'">
+                and t.brands_id like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='createTime'">
+                and t.create_time like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="isSale != null and isSale != ''">
+                and t.is_sale = #{isSale}
+            </if>
+            <if test="isHot != null and isHot != ''">
+                and t.is_hot = #{isHot}
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='visitNum'">
+                and t.visit_num like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='appraiseNum'">
+                and t.appraise_num like concat('%', #{searchValue}, '%')
+            </if>
+        </where>
+    </sql>
+</mapper>

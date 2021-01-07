@@ -1,0 +1,607 @@
+<link href="assets/css/order.css" rel="stylesheet">
+<div class="layui-card">
+    <div class="layui-card-body">
+        <div class="layui-form toolbar">
+            <div class="layui-inline">
+                <label>订单状态：</label>
+                <select id="order-state" lay-filter="order-state" autocomplete="off">
+                    <option value="">-请选择-</option>
+                </select>
+                <label>下单时间：</label>
+                <div class="layui-input-inline">
+                    <input class="layui-input" id="order_create_time" type="text" autocomplete="off"
+                           placeholder=" 开始 - 结束">
+                </div>
+                <label>发货时间：</label>
+                <div class="layui-input-inline">
+                    <input class="layui-input" id="order_delivery_time" type="text" autocomplete="off"
+                           placeholder=" 开始 - 结束">
+                </div>
+                <label>收货时间：</label>
+                <div class="layui-input-inline">
+                    <input class="layui-input" id="order_receive_time" type="text" autocomplete="off"
+                           placeholder=" 开始 - 结束">
+                </div>
+            </div>
+            <div class="layui-inline" style="margin-top: 10px;">
+                <label>搜索：</label>
+                <select id="order-search-key">
+                    <option value="">-请选择-</option>
+                    <option value="userName">收件人</option>
+                    <option value="orderId">订单编号</option>
+                    <option value="userPhone">联系方式</option>
+                    <option value="userAddress">收货地址</option>
+                    <option value="transportId">快递单号</option>
+                </select>&emsp;
+                <input id="order-edit-value" class="layui-input search-input" autocomplete="off" type="text"
+                       placeholder="输入关键字"/>
+                <button id="order-btn-search" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>搜索
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 数据表格 -->
+    <table class="layui-table" id="order-table" lay-filter="order-table"></table>
+</div>
+</div>
+<!-- 表格操作列 -->
+<script type="text/html" id="detail-model">
+    <div class="detail-box">
+        <div class="basic-info">
+            <div class="detail-title">基本信息</div>
+            <table class="layui-table">
+                <tbody>
+                <tr class="md-end-block" mdtype="table_row">
+                    <td><span>订单编号:<span id="t1"></span></span></td>
+                    <td><span>用户编号:<span id="t2"></span></span></td>
+                    <td><span>订单状态:<span id="t3"></span></spa></span></td>
+                </tr>
+                <tr class="md-end-block" mdtype="table_row">
+                    <td><span>下单时间:<span id="t4"></span></span></td>
+                    <td><span>收货时间:<span id="t5"></span></span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="basic-info">
+            <div class="detail-title">收货人信息</div>
+            <table class="layui-table">
+                <tbody>
+                <tr class="md-end-block" mdtype="table_row">
+                    <td><span>收货人:<span id="t6"></span></span></td>
+                    <td><span>联系方式:<span id="t7"></span></span></td>
+                    <td><span>收件地址:<span id="t8"></span></span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="basic-info">
+            <div class="detail-title">发货信息</div>
+            <table class="layui-table">
+                <tbody>
+                <tr class="md-end-block" mdtype="table_row">
+                    <td><span>快递公司:<span id="t9"></span></span></td>
+                    <td><span>快递单号:<span id="t10"></span></span></td>
+                    <td><span>运费:<span id="t22"></span></span></td>
+                    <td><span>发货时间:<span id="t11"></span></span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="basic-info">
+            <div class="detail-title">商品信息</div>
+            <table class="layui-table">
+                <tbody>
+                <tr class="md-end-block" mdtype="table_row">
+                    <td><span>商品编号:<span id="t12"></span></span></td>
+                    <td><span>商品单价:<span id="t13"></span></span></td>
+                    <td><span>商品数量:<span id="t14"></span></span></td>
+                </tr>
+                <tr class="md-end-block" mdtype="table_row">
+                    <td><span>商品总金额(无折扣): <span id="t15"></span></span></td>
+                    <td><span>订单总金额(包含运费): <span id="t16"></span></span></td>
+                    <td><span>结算总金额(折扣后): <span id="t17"></span></span></td>
+                </tr>
+                <tr class="md-end-block" mdtype="table_row">
+                    <td><span>支付金额:<span id="t18"></span></span></td>
+                    <td><span>买家留言:<span id="t19"></span></span></td>
+                </tr>
+                </tbody>
+            </table>
+            <div class="goods-card">
+                <div class="goods-image" id="goods-image">
+                </div>
+                <div class="goods-intrdouce" id="goods-intrdouce">
+                </div>
+            </div>
+        </div>
+        <div class="basic-info">
+            <div class="detail-title">发票信息</div>
+            <table class="layui-table">
+                <tbody>
+                <tr id="n57" class="md-end-block" mdtype="table_row">
+                    <td><span>是否开具发票:<span id="t20"></span></span></td>
+                    <td><span>发票抬头:<span id="t21"></span></span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</script>
+<!-- 表单弹窗 -->
+<script type="text/html" id="order-model">
+    <form id="order-form" lay-filter="order-form" class="layui-form model-form">
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">商品编号</label>
+                <div class="layui-input-block">
+                    <input type="text" name="goodsId" required lay-verify="required"
+                           autocomplete="off" placeholder="请输入商品编号" class="layui-input">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">收件人姓名</label>
+                <div class="layui-input-block">
+                    <input name="userName" class="layui-input" type="text"
+                           placeholder="请输入收件人姓名" autocomplete="off" lay-verify="required">
+                </div>
+            </div>
+            <div class="layui-inline">
+                <label class="layui-form-label">联系方式</label>
+                <div class="layui-input-block">
+                    <input name="userPhone" class="layui-input" type="tel" lay-verify="required"
+                           placeholder="请输入联系方式" autocomplete="off">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <div class="layui-inline">
+                <label class="layui-form-label">运费</label>
+                <div class="layui-input-block">
+                    <input type="number" name="deliverMoney" required lay-verify="required"
+                           autocomplete="off" placeholder="请输入运费" class="layui-input">
+                </div>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">收件地址</label>
+            <div class="layui-input-block">
+                <input type="text" name="userAddress" required lay-verify="required"
+                       autocomplete="off" placeholder="请输入收件地址" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">备注</label>
+            <div class="layui-input-block">
+					<textarea class="layui-textarea" name="noteStruct" maxlength="250"
+                              placeholder="请输入内容，字数250字以内。 "></textarea>
+            </div>
+        </div>
+    </form>
+</script>
+
+<!--发货弹窗-->
+<script type="text/html" id="goSend-model">
+    <div class="receive-info">
+        <h3>收货人信息</h3>
+        <div>
+            <div>收货人:</div>
+            <span id="s1"></span>
+        </div>
+        <div>
+            <div>联系电话:</div>
+            <span id="s2"></span>
+        </div>
+        <div>
+            <div>收货地址:</div>
+            <span id="s3"></span>
+        </div>
+    </div>
+    <div class="receive-info">
+        <h3>物流信息</h3>
+    </div>
+    <form id="send-form" lay-filter="send-form" class="layui-form model-form">
+        <div class="layui-form-item">
+            <label class="layui-form-label">配送方式</label>
+            <div class="layui-input-inline">
+                <select id="order-delivery" lay-search="" lay-verify="required">
+                    <option value=""></option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">快递单号</label>
+            <div class="layui-input-block">
+                <input type="text" name="transportId" lay-verify="required"
+                       autocomplete="off" placeholder="请输入快递单号" class="layui-input" lay-reqtext="订单号是必填项，岂能为空？">
+            </div>
+        </div>
+    </form>
+</script>
+<!-- 表格操作列 -->
+<script type="text/html" id="order-table-bar">
+    <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="detail">详情</a>
+    {{#  if(d.flag == 2){ }}
+    <a class="layui-btn layui-btn-xs layui-btn-warm" lay-event="goSend">发货</a>
+    {{#  } }}
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="edit">修改</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+<!-- 表格操作列 -->
+<script type="text/html" id="order-flag">
+    {{#  if(d.flag == 1){ }}
+    <span class="layui-badge" style="background-color:#039fe9;">待付款</span>
+    {{#  }else if(d.flag == 2){ }}
+    <span class="layui-badge" style="background-color:#f37b1d;">待发货</span>
+    {{#  }else if(d.flag == 3){ }}
+    <span class="layui-badge" style="background-color:#a5673f;">待收货</span>
+    {{#  }else if(d.flag == 4){ }}
+    <span class="layui-badge" style="background-color:#fdd001;">待评价</span>
+    {{#  }else if(d.flag == 5) { }}
+    <span class="layui-badge" style="background-color:#8dc63f;">交易成功</span>
+    {{#  }else if(d.flag == 6){ }}
+    <span class="layui-badge" style="background-color:#e54d42;">申请退款中</span>
+    {{#  }else if(d.flag == 7){ }}
+    <span class="layui-badge" style="background-color:#39b54a;">退款成功</span>
+    {{#  }else if(d.flag == 8){ }}
+    <span class="layui-badge" style="background-color:#e54d42;">订单已取消</span>
+    {{# } }}
+</script>
+
+<script>
+    layui.use(['form', 'table', 'util', 'config', 'admin', 'formSelects', 'laydate'], function () {
+        var form = layui.form;
+        var table = layui.table;
+        var config = layui.config;
+        var layer = layui.layer;
+        var laydate = layui.laydate;
+        var util = layui.util;
+        var admin = layui.admin;
+        var formSelects = layui.formSelects;
+
+        //通过时间范围查询
+        laydate.render({
+            elem: '#order_create_time',
+            trigger: 'click',
+            range: true,
+            theme: '#1e9fff',
+            done: function (value, date, endDate) {
+                table.reload('order-table', {where: {createTime: value}});
+            }
+        });
+        laydate.render({
+            elem: '#order_delivery_time',
+            trigger: 'click',
+            range: true,
+            theme: '#1e9fff',
+            done: function (value, date, endDate) {
+                table.reload('order-table', {where: {deliveryTime: value}});
+            }
+        });
+        laydate.render({
+            elem: '#order_receive_time',
+            trigger: 'click',
+            range: true,
+            theme: '#1e9fff',
+            done: function (value, date, endDate) {
+                table.reload('order-table', {where: {receiveTime: value}});
+            }
+        });
+
+        //渲染下拉框
+        select('api-user/dictdetail/list', 'e125dd1ea41c4ada9f3fade186ba9fd3', '#order-state')
+        layui.form.render("select");
+
+        //渲染表格
+        table.render({
+            elem: '#order-table',
+            url: config.base_server + 'api-user/order/list',
+            where: {
+                access_token: config.getToken().access_token
+            },
+            page: {first: '首页', last: '尾页'},
+            cols: [[
+                {type: 'numbers'},
+                {field: 'userId', align: 'center', sort: true, title: '用户编号', width: 250},
+                {field: 'orderId', align: 'center', sort: true, title: '订单编号', width: 160},
+                {field: 'goodsId', align: 'center', sort: true, title: '商品编号', width: 150},
+                {field: 'userName', align: 'center', title: '收件人姓名', width: 100},
+                {field: 'userPhone', align: 'center', sort: true, title: '联系方式', width: 120},
+                {field: 'userAddress', align: 'center', sort: true, title: '收件地址', width: 250},
+                {
+                    field: 'goodsNum', align: 'center', title: '商品数量', width: 100, templet(d) {
+                        return d.goodsNum + '件';
+                    }
+                },
+                {
+                    field: 'deliverMoney', align: 'center', sort: true, templet(d) {
+                        return "￥ " + d.deliverMoney
+                    }, title: '运费', width: 100
+                },
+                {
+                    field: 'goodsAmount', align: 'center', sort: true, templet(d) {
+                        return "￥ " + d.goodsAmount
+                    }, title: '商品单价', width: 150
+                },
+                {
+                    field: 'orderAmount', align: 'center', sort: true, templet(d) {
+                        return "￥ " + d.orderAmount
+                    }, title: '商品总金额', width: 150
+                },
+                {
+                    field: 'totalMoney', align: 'center', sort: true, templet(d) {
+                        return "￥ " + d.totalMoney
+                    }, title: '订单总金额', width: 150
+                },
+                {
+                    field: 'totalMoney', align: 'center', sort: true, templet(d) {
+                        const number = d.realTotalMoney - d.totalMoney;
+                        return "￥- " + number;
+                    }, title: '优惠', width: 150
+                },
+                {
+                    field: 'realTotalMoney', align: 'center', sort: true, templet(d) {
+                        return "<span style='color:#e8575c;'>￥ " + d.realTotalMoney + "</span>";
+                    }, title: '应付', width: 150
+                },
+                {field: 'noteStruct', align: 'center', title: '客户留言', width: 250},
+                {field: 'flag', align: 'center', sort: true, toolbar: '#order-flag', title: '订单状态', width: 120},
+                {field: 'createTime', align: 'center', sort: true, title: '下单时间', width: 200},
+                {field: 'deliveryTime', align: 'center', sort: true, title: '发货时间', width: 200},
+                {field: 'receiveTime', align: 'center', sort: true, title: '收货时间', width: 200},
+                {fixed: 'right', align: 'center', toolbar: '#order-table-bar', title: '操作', width: 230}
+            ]]
+        });
+
+        // 工具条点击事件
+        table.on('tool(order-table)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'edit') { //修改
+                doUpdate(data);
+            } else if (obj.event === 'del') { //删除
+                doDelete(obj);
+            } else if (obj.event === 'goSend') {//发货
+                goSend(data);
+            } else if (obj.event === 'detail') {
+                toDetail(data);
+                // 标注选中样式
+                obj.tr.addClass('layui-table-click').siblings().removeClass('layui-table-click');
+            }
+        });
+
+        // 添加按钮点击事件
+        $('#order-btn-add').click(function () {
+            doSave();
+        });
+
+        // 搜索按钮点击事件
+        $('#order-btn-search').click(function () {
+            var key = $('#order-search-key').val();
+            var value = $('#order-edit-value').val();
+            table.reload('order-table', {where: {searchKey: key, searchValue: value}});
+        });
+
+        // 监听订单状态下拉框
+        form.on('select(order-state)', function (e) {
+            var value = e.value;
+            table.reload('order-table', {where: {flag: value}});
+        });
+        // 查看详情
+        var toDetail = function (data) {
+            layer.open({
+                type: 0,
+                area: ['60%', '600px'],
+                title: ['查看详情'],
+                btn: ['关闭'],
+                shadeClose: true,
+                btnAlign: 'c',
+                shade: 0.5,
+                maxmin: true,
+                offset: 'auto',
+                skin: 'demo-class',
+                content: $('#detail-model').html(),
+                success: function (layero, index) {
+                    admin.req('api-user/goods/list/', {
+                        searchKey: 'goodsId',
+                        searchValue: data.goodsId
+                    }, function (res) {
+                        if (0 == res.code) {
+                            console.log('商品详情加载成功!!');
+                            const imgUrl = res.data[0].goodsImg;
+                            const intrdouce = res.data[0].goodsIntroduce;
+                            $("#goods-image").append("<a href=" + imgUrl + " target='_blank' title='点击查看大图'><img src=" + imgUrl + "  width='120px' height='120px'></a>");
+                            $("#goods-intrdouce").append("<text></text>").text(intrdouce);
+                        } else {
+                            console.log('商品详情加载失败!!');
+                        }
+                    }, 'GET');
+                    $("#t1").text(data.orderId);
+                    $("#t2").text(data.userId);
+                    if (data.flag == 1) {
+                        $("#t3").append('<span class="layui-badge" style="background-color:#039fe9;">待付款</span>');
+                    } else if (data.flag == 2) {
+                        $("#t3").append('<span class="layui-badge" style="background-color:#f37b1d;">待发货</span>');
+                    } else if (data.flag == 3) {
+                        $("#t3").append('<span class="layui-badge" style="background-color:#a5673f;">待收货</span>');
+                    } else if (data.flag == 4) {
+                        $("#t3").append('<span class="layui-badge" style="background-color:#fdd001;">待评价</span>');
+                    } else if (data.flag == 5) {
+                        $("#t3").append('<span class="layui-badge" style="background-color:#8dc63f;">交易成功</span>');
+                    } else if (data.flag == 6) {
+                        $("#t3").append('<span class="layui-badge" style="background-color:#e54d42;">申请退款中</span>');
+                    } else if (data.flag == 7) {
+                        $("#t3").append('<span class="layui-badge" style="background-color:#39b54a;">退款成功</span>');
+                    } else if (data.flag == 8) {
+                        $("#t3").append('<span class="layui-badge" style="background-color:#e54d42;">订单已取消</span>');
+                    }
+                    $("#t4").text(data.createTime);
+                    $("#t5").text(data.receiveTime);
+                    $("#t6").text(data.userName);
+                    $("#t7").text(data.userPhone);
+                    $("#t8").text(data.userAddress);
+                    $("#t9").text(data.orderDelivery);
+                    $("#t10").text(data.transportId);
+                    $("#t11").text(data.deliveryTime);
+                    $("#t12").text(data.goodsId);
+                    $("#t13").text(data.goodsAmount);
+                    $("#t14").text(data.goodsNum);
+                    $("#t15").text(data.orderAmount);
+                    $("#t16").text(data.totalMoney);
+                    $("#t17").text(data.realTotalMoney);
+                    $("#t18").text(data.needPay);
+                    $("#t19").text(data.noteStruct);
+                    const no = '<span class="layui-badge" style="background-color:#dd2c00;">否</span>';
+                    const yes = '<span class="layui-badge" style="background-color:#1e9fff;">是</span>';
+                    if (data.isInvoice == 0) {
+                        $("#t20").append(no);
+                    } else if (data.isInvoice == 1) {
+                        $("#t20").append(yes);
+                    }
+                    $("#t21").text(data.invoiceClient);
+                    $("#t22").text(data.deliverMoney);
+                }
+            });
+        }
+
+        // 删除
+        var doDelete = function (obj) {
+            layer.confirm('确定要删除吗？', function (i) {
+                layer.close(i);
+                layer.load(2);
+                const reqdata = {
+                    id: obj.data.id,
+                    dataFlag: 0
+                }
+                admin.req('api-user/order/update/', JSON.stringify(reqdata), function (data) {
+                    layer.closeAll('loading');
+                    if (data.code == 0) {
+                        layer.msg(data.msg, {icon: 1, time: 500});
+                        obj.del();
+                    } else {
+                        layer.msg(data.msg, {icon: 2, time: 500});
+                    }
+                }, 'POST');
+            });
+        };
+
+        //发货
+        var goSend = function (data) {
+            layer.open({
+                type: 1,
+                area: ['35%'],
+                title: ['发货'],
+                btn: ['确认发货', '取消'],
+                shadeClose: true,
+                btnAlign: 'c',
+                shade: 0.5,
+                content: $('#goSend-model').html(),
+                success: function (layero, index) {
+                    select('api-user/dictdetail/list', '80342014af3b4e188d373cb9d304a803', '#order-delivery');
+                    form.render();
+                    $("#s1").text(data.userName);
+                    $("#s2").text(data.userPhone);
+                    $("#s3").text(data.userAddress);
+                },
+                yes: function (index, layero) {
+                    const transportId = $("input[name='transportId']").val();
+                    const orderDelivery = $("#order-delivery").val();
+                    const reqdata = {
+                        id: data.id,
+                        transportId: transportId,
+                        orderDelivery: orderDelivery,
+                        deliveryTime: '2020-11-07 19:05:40',
+                        flag: 3
+                    }
+                    admin.req('api-user/order/update', JSON.stringify(reqdata), function (res) {
+                        if (res.code == 0) {
+                            layer.alert(res.msg, {
+                                icon: 1,
+                                title: '提示'
+                            }, function (i) {
+                                layer.close(i);
+                                layer.close(index); // 关闭弹出层
+                                $("#send-form")[0].reset() // 重置form
+                            })
+                            table.reload('order-table', { // 重载表格
+                                page: {
+                                    curr: 1
+                                }
+                            })
+                        } else {
+                            layer.msg(res.msg, {
+                                icon: 5
+                            });
+                        }
+                    }, "POST")
+                }
+            })
+        };
+
+        //编辑
+        var doUpdate = function (data) {
+            layer.open({
+                type: 1,
+                area: ['50%'],
+                title: ['修改订单'],
+                btn: ['保存', '取消'],
+                shadeClose: true,
+                btnAlign: 'c',
+                shade: 0.5,
+                maxmin: true,
+                content: $('#order-model').html(),
+                success: function (layero, index) {
+                    layui.form.render();
+                    $("input[name='goodsId']").val(data.goodsId);
+                    $("input[name='userName']").val(data.userName);
+                    $("input[name='userPhone']").val(data.userPhone);
+                    $("input[name='deliverMoney']").val(data.deliverMoney);
+                    $("input[name='userAddress']").val(data.userAddress);
+                    $("textarea[name='noteStruct']").val(data.noteStruct);
+                },
+                yes: function (index, layero) {
+                    const goodsId = $("input[name='goodsId']").val();
+                    const userName = $("input[name='userName']").val();
+                    const userPhone = $("input[name='userPhone']").val();
+                    const deliverMoney = $("input[name='deliverMoney']").val();
+                    const userAddress = $("input[name='userAddress']").val();
+                    const noteStruct = $("textarea[name='noteStruct']").val();
+                    const reqdata = {
+                        id: data.id,
+                        goodsId: goodsId,
+                        userName: userName,
+                        userPhone: userPhone,
+                        userAddress: userAddress,
+                        deliverMoney: deliverMoney,
+                        noteStruct: noteStruct
+                    }
+                    admin.req('api-user/order/update', JSON.stringify(reqdata), function (res) {
+                        if (res.code == 0) {
+                            layer.alert(res.msg, {
+                                icon: 1,
+                                title: '提示'
+                            }, function (i) {
+                                layer.close(i);
+                                layer.close(index); // 关闭弹出层
+                                $("#order-form")[0].reset() // 重置form
+                            })
+                            table.reload('order-table', { // 重载表格
+                                page: {
+                                    curr: 1
+                                }
+                            })
+                        } else {
+                            layer.msg(res.msg, {
+                                icon: 5
+                            });
+                        }
+                    }, "POST")
+                }
+            });
+        };
+        layui.form.render();
+    });
+</script>

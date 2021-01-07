@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.open.capacity.user.dao.OrderDao">
+
+    <insert id="save" parameterType="com.open.capacity.user.model.Order">
+        insert into orders(id,user_id,order_id,user_name,user_phone,user_address, goods_id,goods_num,goods_amount,
+        order_delivery,order_amount,deliver_money,total_money,real_total_money,is_invoice,invoice_client,need_pay,
+        create_time,note_struct,flag) values (#{ id},#{ userId},#{ orderId},#{ userName},#{ userPhone},#{ userAddress},
+        #{ goodsId},#{ goodsNum},#{ goodsAmount},#{ orderDelivery},#{ orderAmount},#{ deliverMoney},#{totalMoney},
+        #{realTotalMoney},#{isInvoice},#{invoiceClient},#{needPay},now(),#{ noteStruct},#{flag})
+    </insert>
+
+    <update id="update" parameterType="com.open.capacity.user.model.Order">
+        update orders
+        <set>
+            <if test="userId != null">
+                user_id = #{userId},
+            </if>
+            <if test="transportId != null">
+                transport_id = #{transportId},
+            </if>
+            <if test="orderId != null">
+                order_id = #{orderId},
+            </if>
+            <if test="userName != null">
+                user_name = #{userName},
+            </if>
+            <if test="userPhone != null">
+                user_phone = #{userPhone},
+            </if>
+            <if test="userAddress != null">
+                user_address = #{userAddress},
+            </if>
+            <if test="goodsId != null">
+                goods_id = #{goodsId},
+            </if>
+            <if test="goodsNum != null">
+                goods_num = #{goodsNum},
+            </if>
+            <if test="goodsAmount != null">
+                goods_amount = #{goodsAmount},
+            </if>
+            <if test="orderDelivery != null">
+                order_delivery = #{orderDelivery},
+            </if>
+            <if test="orderAmount != null">
+                order_amount = #{orderAmount},
+            </if>
+            <if test="deliverMoney != null">
+                deliver_money = #{deliverMoney},
+            </if>
+            <if test="totalMoney != null">
+                total_money = #{totalMoney},
+            </if>
+            <if test="realTotalMoney != null">
+                real_total_money = #{realTotalMoney},
+            </if>
+            <if test="isInvoice != null">
+                is_invoice = #{isInvoice},
+            </if>
+            <if test="invoiceClient != null">
+                invoice_client = #{invoiceClient},
+            </if>
+            <if test="needPay != null">
+                needPay = #{needpay},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="noteStruct != null">
+                note_struct = #{noteStruct},
+            </if>
+            <if test="flag != null">
+                flag = #{flag},
+            </if>
+            <if test="dataFlag != null">
+                data_flag = #{dataFlag},
+            </if>
+            <if test="deliveryTime != null">
+                delivery_time = now(),
+            </if>
+            <if test="receiveTime != null">
+                receive_time = now(),
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <update id="updateByOrderId" parameterType="com.open.capacity.user.model.Order">
+        update orders
+        <set>
+            <if test="flag != null">
+                flag = #{flag},
+            </if>
+        </set>
+        where order_id = #{orderId}
+    </update>
+
+    <delete id="delete" parameterType="long" flushCache="true">
+        delete from orders where id = #{id}
+    </delete>
+
+    <select id="findAll" resultMap="orderTbMap">
+        select * from orders t
+        <include refid="where"/>
+        order by t.flag asc
+    </select>
+    <sql id="where">
+        <where>
+            <if test="searchKey != null and searchKey != '' and searchKey=='id'">
+                and t.id like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='userId'">
+                and t.user_id = #{searchValue}
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='orderId'">
+                and t.order_id = #{searchValue}
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='transportId'">
+                and t.transport_id like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='userName'">
+                and t.user_name like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='userPhone'">
+                and t.user_phone like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='userAddress'">
+                and t.user_address like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='goodsId'">
+                and t.goods_id like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='goodsNum'">
+                and t.goods_num like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='goodsAmount'">
+                and t.goods_amount like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='orderDelivery'">
+                and t.order_delivery like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='orderAmount'">
+                and t.order_amount like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='deliverMoney'">
+                and t.deliver_money like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='noteStruct'">
+                and t.note_struct like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="createTime != null and createTime != ''">
+                t.create_time between substring_index(#{createTime}, ' - ', 1) and substring_index(#{createTime}, ' -
+                ',-1)
+            </if>
+            <if test="deliveryTime != null and deliveryTime != ''">
+                t.delivery_time between substring_index(#{deliveryTime}, ' - ', 1) and substring_index(#{deliveryTime},'
+                - ', -1)
+            </if>
+            <if test="receiveTime != null and receiveTime != ''">
+                t.receive_time between substring_index(#{receiveTime}, ' - ', 1) and substring_index(#{receiveTime}, ' -
+                ', -1)
+            </if>
+            <if test="flag != null and flag != ''">
+                and t.flag = #{flag}
+            </if>
+            and t.data_flag = 1
+        </where>
+    </sql>
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.open.capacity.user.model.Order" id="orderTbMap">
+        <result property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="orderId" column="order_id"/>
+        <result property="goodsId" column="goods_id"/>
+        <result property="transportId" column="transport_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="userPhone" column="user_phone"/>
+        <result property="userAddress" column="user_address"/>
+        <result property="goodsNum" column="goods_num"/>
+        <result property="goodsAmount" column="goods_amount"/>
+        <result property="orderDelivery" column="order_delivery"/>
+        <result property="orderAmount" column="order_amount"/>
+        <result property="deliverMoney" column="deliver_money"/>
+        <result property="createTime" column="create_time"/>
+        <result property="noteStruct" column="note_struct"/>
+        <result property="flag" column="flag"/>
+        <result property="dataFlag" column="data_flag"/>
+        <result property="totalMoney" column="total_money"/>
+        <result property="realTotalMoney" column="real_total_money"/>
+        <result property="isInvoice" column="is_invoice"/>
+        <result property="invoiceClient" column="invoice_client"/>
+        <result property="needPay" column="need_pay"/>
+        <result property="deliveryTime" column="delivery_time"/>
+        <result property="receiveTime" column="receive_time"/>
+    </resultMap>
+</mapper>

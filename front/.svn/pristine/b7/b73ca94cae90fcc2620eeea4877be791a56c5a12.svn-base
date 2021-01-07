@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.open.capacity.user.dao.CartDao">
+
+    <resultMap type="com.open.capacity.user.model.Cart" id="cartMap">
+        <result property="carId" column="car_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="goodsId" column="goods_id"/>
+        <result property="quantity" column="quantity"/>
+        <result property="checked" column="checked"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <insert id="save" parameterType="com.open.capacity.user.model.Cart">
+        insert into cart(car_id,user_id,goods_id,quantity,checked,create_time)
+                  values (#{ carId},#{ userId},#{ goodsId},#{ quantity},#{ checked},now())
+    </insert>
+
+    <update id="update" parameterType="com.open.capacity.user.model.Cart">
+        update cart
+        <set>
+            <if test="carId != null">
+                car_id = #{carId},
+            </if>
+            <if test="userId != null">
+                user_id = #{userId},
+            </if>
+            <if test="goodsId != null">
+                goods_id = #{goodsId},
+            </if>
+            <if test="quantity != null">
+                quantity = #{quantity},
+            </if>
+            <if test="checked != null">
+                checked = #{checked},
+            </if>
+            update_time = now(),
+        </set>
+        where car_id = #{carId}
+    </update>
+
+    <delete id="delete" parameterType="String" flushCache="true">
+        delete from cart where car_id = #{carId}
+    </delete>
+
+    <select id="findAll" parameterType="map" resultMap="cartMap">
+        select * from cart t
+        <include refid="where"/>
+    </select>
+    <sql id="where">
+        <where>
+            <if test="searchKey != null and searchKey != '' and searchKey=='carId'">
+                and t.car_id like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='userId'">
+                and t.user_id like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='goodsId'">
+                and t.goods_id like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='quantity'">
+                and t.quantity like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='checked'">
+                and t.checked like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='createTime'">
+                t.create_time between substring_index(#{searchValue}, ' - ', 1) and substring_index(#{searchValue}, ' -
+                ', -1)
+            </if>
+        </where>
+    </sql>
+</mapper>

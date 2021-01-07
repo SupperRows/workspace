@@ -1,0 +1,11 @@
+${AnsiColor.BRIGHT_BLUE}:: jingdian-affordable-shopping 🤓 :: Running Spring Boot ${spring-boot.version} ::
+
+  ${AnsiColor.GREEN}      _   ${AnsiColor.MAGENTA}             ${AnsiColor.BRIGHT_CYAN}    _____
+  ${AnsiColor.GREEN}     | |  ${AnsiColor.MAGENTA}     /\      ${AnsiColor.BRIGHT_CYAN}   / ____|
+  ${AnsiColor.GREEN}     | |  ${AnsiColor.MAGENTA}    /  \     ${AnsiColor.BRIGHT_CYAN}  | (___
+  ${AnsiColor.GREEN} _   | |  ${AnsiColor.MAGENTA}   / /\ \    ${AnsiColor.BRIGHT_CYAN}   \___ \
+  ${AnsiColor.GREEN}| |__| |  ${AnsiColor.MAGENTA}  / ____ \   ${AnsiColor.BRIGHT_CYAN}   ____) |
+  ${AnsiColor.GREEN} \____/   ${AnsiColor.MAGENTA} /_/    \_\  ${AnsiColor.BRIGHT_CYAN}   \_____/
+
+  ${AnsiColor.WHITE} 项目地址:http://gitee.com/jasObject
+  ${AnsiColor.WHITE} 项目地址:http://gitee.com/introduce.md

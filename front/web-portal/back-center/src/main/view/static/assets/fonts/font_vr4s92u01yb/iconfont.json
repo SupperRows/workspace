@@ -1,0 +1,149 @@
+{
+  "id": "",
+  "name": "",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "17102714",
+      "name": "bar-chart-2-line",
+      "font_class": "bar-chart-2-line",
+      "unicode": "e6c0",
+      "unicode_decimal": 59072
+    },
+    {
+      "icon_id": "17102715",
+      "name": "bar-chart-fill",
+      "font_class": "bar-chart-fill",
+      "unicode": "e6c1",
+      "unicode_decimal": 59073
+    },
+    {
+      "icon_id": "17102717",
+      "name": "bar-chart-grouped-fill",
+      "font_class": "bar-chart-grouped-fill",
+      "unicode": "e6c2",
+      "unicode_decimal": 59074
+    },
+    {
+      "icon_id": "17102718",
+      "name": "bar-chart-2-fill",
+      "font_class": "bar-chart-2-fill",
+      "unicode": "e6c3",
+      "unicode_decimal": 59075
+    },
+    {
+      "icon_id": "17102730",
+      "name": "briefcase-2-fill",
+      "font_class": "briefcase-2-fill",
+      "unicode": "e6c5",
+      "unicode_decimal": 59077
+    },
+    {
+      "icon_id": "17102731",
+      "name": "briefcase-2-line",
+      "font_class": "briefcase-2-line",
+      "unicode": "e6c6",
+      "unicode_decimal": 59078
+    },
+    {
+      "icon_id": "17102734",
+      "name": "briefcase-4-fill",
+      "font_class": "briefcase-4-fill",
+      "unicode": "e6c7",
+      "unicode_decimal": 59079
+    },
+    {
+      "icon_id": "17102735",
+      "name": "briefcase-5-fill",
+      "font_class": "briefcase-5-fill",
+      "unicode": "e6c8",
+      "unicode_decimal": 59080
+    },
+    {
+      "icon_id": "17102737",
+      "name": "briefcase-5-line",
+      "font_class": "briefcase-5-line",
+      "unicode": "e6c9",
+      "unicode_decimal": 59081
+    },
+    {
+      "icon_id": "17102742",
+      "name": "calendar-2-fill",
+      "font_class": "calendar-2-fill",
+      "unicode": "e6ca",
+      "unicode_decimal": 59082
+    },
+    {
+      "icon_id": "17102745",
+      "name": "calendar-2-line",
+      "font_class": "calendar-2-line",
+      "unicode": "e6cb",
+      "unicode_decimal": 59083
+    },
+    {
+      "icon_id": "17102746",
+      "name": "calendar-check-fill",
+      "font_class": "calendar-check-fill",
+      "unicode": "e6cc",
+      "unicode_decimal": 59084
+    },
+    {
+      "icon_id": "17102779",
+      "name": "flag-fill",
+      "font_class": "flag-fill",
+      "unicode": "e6d2",
+      "unicode_decimal": 59090
+    },
+    {
+      "icon_id": "17102780",
+      "name": "flag-2-line",
+      "font_class": "flag-2-line",
+      "unicode": "e6d3",
+      "unicode_decimal": 59091
+    },
+    {
+      "icon_id": "17102794",
+      "name": "line-chart-line",
+      "font_class": "line-chart-line",
+      "unicode": "e6d6",
+      "unicode_decimal": 59094
+    },
+    {
+      "icon_id": "17102795",
+      "name": "line-chart-fill",
+      "font_class": "line-chart-fill",
+      "unicode": "e6d5",
+      "unicode_decimal": 59093
+    },
+    {
+      "icon_id": "17102823",
+      "name": "medal-2-fill",
+      "font_class": "medal-2-fill",
+      "unicode": "e6df",
+      "unicode_decimal": 59103
+    },
+    {
+      "icon_id": "17102824",
+      "name": "medal-line",
+      "font_class": "medal-line",
+      "unicode": "e6e0",
+      "unicode_decimal": 59104
+    },
+    {
+      "icon_id": "17102826",
+      "name": "pie-chart-2-fill",
+      "font_class": "pie-chart-2-fill",
+      "unicode": "e6e1",
+      "unicode_decimal": 59105
+    },
+    {
+      "icon_id": "17102827",
+      "name": "pie-chart-2-line",
+      "font_class": "pie-chart-2-line",
+      "unicode": "e6e2",
+      "unicode_decimal": 59106
+    }
+  ]
+}

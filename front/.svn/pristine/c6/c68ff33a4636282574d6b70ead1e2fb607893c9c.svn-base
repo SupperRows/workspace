@@ -1,0 +1,266 @@
+<style>
+    .layui-table-cell {
+        height: auto !important;
+    }
+</style>
+<div class="layui-card">
+    <div class="layui-card-body">
+        <div class="layui-form toolbar">
+            搜索：
+            <select id="brands-search-key">
+                <option value="">-请选择-</option>
+                <option value="brandsId">品牌编号</option>
+                <option value="brandsName">品牌名称</option>
+                <option value="brandsIntroduce">品牌介绍</option>
+            </select>&emsp;
+            <input id="brands-edit-value" class="layui-input search-input" type="text" placeholder="输入关键字"/>&emsp;
+            <button id="brands-btn-search" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>搜索
+            </button>
+            <button id="brands-btn-add" class=" layui-btn icon-btn layui-btn-warm"><i class="layui-icon">&#xe654;</i>添加品牌
+            </button>
+        </div>
+
+        <!-- 数据表格 -->
+        <table class="layui-table" id="brands-table" lay-filter="brands-table"></table>
+    </div>
+</div>
+
+<!-- 表格操作列 -->
+<script type="text/html" id="brands-table-bar">
+    <button class="layui-btn layui-btn-primary layui-btn-xs" id="brands-btn-edit" lay-event="edit">修改</button>
+    <button class="layui-btn layui-btn-danger layui-btn-xs" id="brands-btn-del" lay-event="del">删除</button>
+</script>
+
+<!-- 表单弹窗 -->
+<script type="text/html" id="brands-model">
+    <form id="brands-form" lay-filter="brands-form" class="layui-form model-form">
+        <input name="id" type="hidden"/>
+        <div class="layui-form-item">
+            <label class="layui-form-label">品牌名称</label>
+            <div class="layui-input-block">
+                <input type="text" name="brandsName" autocomplete="off"
+                       placeholder="请输入品牌名称" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">商标链接</label>
+            <div class="layui-input-block">
+                <input type="text" name="brandsImg" autocomplete="off"
+                       placeholder="请输入品牌商标链接" class="layui-input">
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">品牌介绍</label>
+            <div class="layui-input-block">
+					<textarea class="layui-textarea" name="brandsIntroduce" maxlength="250"
+                              placeholder="请输入内容，字数在250字以内。"></textarea>
+            </div>
+        </div>
+    </form>
+</script>
+
+<script>
+    layui.use(['form', 'table', 'util', 'config', 'admin', 'formSelects'], function () {
+        var $ = layui.jquery;
+        var form = layui.form;
+        var table = layui.table;
+        var config = layui.config;
+        var layer = layui.layer;
+        var util = layui.util;
+        var admin = layui.admin;
+        var formSelects = layui.formSelects;
+
+        // 添加按钮绑定权限
+        if (!admin.hasPerm('brandstb:save')) {
+            $('#brands-btn-add').hide();
+        }
+        // 修改按钮绑定权限
+        if (!admin.hasPerm('brandstb:update')) {
+            $('#brands-btn-edit').hide();
+        }
+        // 删除按钮绑定权限
+        if (!admin.hasPerm('brandstb:delete')) {
+            $('#brands-btn-del').hide();
+        }
+
+
+        //渲染表格
+        table.render({
+            elem: '#brands-table',
+            url: config.base_server + 'api-user/brands/list',
+            method: 'GET',
+            where: {
+                access_token: config.getToken().access_token
+            },
+            page: {first: '首页', last: '尾页'},
+            toolbar: true,
+            defaultToolbar: ['filter', 'print', 'exports'],
+            cols: [[
+                {type: 'numbers'},
+                {field: 'brandsId', align: 'center', sort: true, title: '品牌编号', width: 120},
+                {field: 'brandsName', sort: true, title: '品牌名称', width: 120},
+                {
+                    field: 'brandsImg', align: 'center', width: 110, sort: true, title: '品牌商标', templet: function (d) {
+                        let res = '<a href="' + d.brandsImg +
+                            '" target="_blank" title="点击查看大图"><img width="40px" height="40px" src="' +
+                            d.brandsImg + '"/></a>'
+                        return res;
+                    }
+                },
+                {field: 'brandsIntroduce', sort: true, title: '品牌介绍'},
+                {
+                    field: 'createTime', width: 180, sort: true, title: '创建时间'
+                },
+                {align: 'center', toolbar: '#brands-table-bar', title: '操作', width: 180}
+            ]]
+        });
+
+        // 工具条点击事件
+        table.on('tool(brands-table)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'edit') { //修改
+                doUpdate(data);
+            } else if (obj.event === 'del') { //删除
+                doDelete(obj);
+            }
+        });
+
+        // 添加按钮点击事件
+        $('#brands-btn-add').click(function () {
+            doSave();
+        });
+
+        // 搜索按钮点击事件
+        $('#brands-btn-search').click(function () {
+            var key = $('#brands-search-key').val();
+            var value = $('#brands-edit-value').val();
+            table.reload('brands-table', {where: {searchKey: key, searchValue: value}});
+        });
+
+        // 删除
+        var doDelete = function (obj) {
+            layer.confirm('确定要删除吗？', function (i) {
+                layer.close(i);
+                layer.load(2);
+                admin.req('api-user/brands/delete/' + obj.data.id, {}, function (data) {
+                    layer.closeAll('loading');
+                    if (data.code == 0) {
+                        layer.msg(data.msg, {icon: 1, time: 500});
+                        obj.del();
+                    } else {
+                        layer.msg(data.msg, {icon: 2, time: 500});
+                    }
+                }, 'DELETE');
+            });
+        };
+
+        //编辑
+        var doUpdate = function (data) {
+            layer.open({
+                type: 1,
+                area: ['40%'],
+                title: ['编辑品牌信息'],
+                btn: ['保存', '取消'],
+                shadeClose: true,
+                btnAlign: 'c',
+                shade: 0.5,
+                content: $('#brands-model').html(),
+                success: function (layero, index) {
+                    $("input[name='brandsName']").val(data.brandsName);
+                    $("input[name='brandsImg']").val(data.brandsImg);
+                    $("textarea[name='brandsIntroduce']").val(data.brandsIntroduce);
+                },
+                yes: function (index, layero) {
+                    const brandsName = $("input[name='brandsName']").val();
+                    const brandsImg = $("input[name='brandsImg']").val();
+                    const brandsIntroduce = $("textarea[name='brandsIntroduce']").val();
+                    if (brandsName == '') {
+                        layer.msg("请先输入品牌名称!", {});
+                    } else if (brandsImg == '') {
+                        layer.msg("请先输入图片链接!", {});
+                    } else {
+                        const reqdata = {
+                            id: data.id,
+                            brandsId: data.brandsId,
+                            brandsName: brandsName,
+                            brandsImg: brandsImg,
+                            brandsIntroduce: brandsIntroduce
+                        }
+                        admin.req('api-user/brands/update', JSON.stringify(reqdata), function (res) {
+                            if (res.code == 0) {
+                                layer.alert(res.msg, {
+                                    icon: 1,
+                                    title: '提示'
+                                }, function (i) {
+                                    layer.close(i);
+                                    layer.close(index); // 关闭弹出层
+                                    $("#brands-form")[0].reset() // 重置form
+                                })
+                                table.reload('brands-table', { // 重载表格
+                                    page: {
+                                        curr: 1
+                                    }
+                                })
+                            } else {
+                                layer.msg(res.msg, {
+                                    icon: 5
+                                });
+                            }
+                        }, "POST")
+                    }
+                }
+            });
+        }
+        //添加
+        var doSave = function () {
+            layer.open({
+                type: 1,
+                title: '添加品牌信息',
+                shadeClose: true,
+                area: ['40%'],
+                btnAlign: 'c',
+                content: $('#brands-model').html(),
+                btn: ['确定', '取消'],
+                yes: function (index, layero) {
+                    const brandsName = $("input[name='brandsName']").val();
+                    const brandsImg = $("input[name='brandsImg']").val();
+                    const brandsIntroduce = $("textarea[name='brandsIntroduce']").val();
+                    if (brandsName == '') {
+                        layer.msg("请先输入品牌名称!", {});
+                    } else if (brandsImg == '') {
+                        layer.msg("请先输入图片链接!", {});
+                    } else {
+                        const reqdata = {
+                            brandsId: random_N0(2),
+                            brandsName: brandsName,
+                            brandsImg: brandsImg,
+                            brandsIntroduce: brandsIntroduce
+                        }
+                        admin.req('api-user/brands/save', JSON.stringify(reqdata), function (res) {
+                            if (res.code == 0) {
+                                layer.alert(res.msg, {
+                                    icon: 1,
+                                    title: '提示'
+                                }, function (i) {
+                                    layer.close(i);
+                                    layer.close(index);
+                                    $("#brands-form")[0].reset()
+                                })
+                                table.reload('brands-table', {
+                                    page: {
+                                        curr: 0
+                                    }
+                                })
+                            } else {
+                                layer.msg(res.msg, {
+                                    icon: 5
+                                });
+                            }
+                        }, "PUT")
+                    }
+                }
+            })
+        }
+    });
+
+</script>

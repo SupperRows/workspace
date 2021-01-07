@@ -1,0 +1,286 @@
+<style>
+    .layui-table-cell {
+        height: auto !important;
+    }
+</style>
+<div class="layui-card">
+    <div class="layui-card-body">
+        <div class="layui-form toolbar">
+            支付平台：
+            <select id="payMethods-search-key" lay-filter="payMethods-search-key" autocomplete="off">
+                <option value="">-请选择-</option>
+                <option value="1">微信支付</option>
+                <option value="2">支付宝支付</option>
+                <option value="3">银联支付</option>
+            </select>&emsp;
+            支付状态：
+            <select id="payStatus-search-key" lay-filter="payStatus-search-key" autocomplete="off">
+                <option value="">-请选择-</option>
+                <option value="已支付">已支付</option>
+                <option value="待支付">待支付</option>
+            </select>&emsp;
+            生成时间：
+            <div class="layui-input-inline">
+                <input class="layui-input" id="pay_create_time" type="text" autocomplete="off"
+                       placeholder=" 开始 - 结束">
+            </div>
+            搜索：
+            <select id="payinfo-search-key">
+                <option value="">-请选择-</option>
+                <option value="orderId">订单编号</option>
+                <option value="userId">用户编号</option>
+                <option value="platformNumber">支付流水号</option>
+            </select>&emsp;
+            <input id="payinfo-edit-value" class="layui-input search-input" type="text" placeholder="输入关键字"/>&emsp;
+            <button id="payinfo-btn-search" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>搜索
+            </button>
+        </div>
+
+        <!-- 数据表格 -->
+        <table class="layui-table" id="payinfo-table" lay-filter="payinfo-table"></table>
+    </div>
+</div>
+
+<!-- 表单弹窗 -->
+<script type="text/html" id="payinfo-model">
+    <form id="payinfo-form" lay-filter="payinfo-form" class="layui-form model-form">
+        <div class="layui-form-item">
+            <label class="layui-form-label"></label>
+            <div class="layui-input-block">
+                <input name="pay_id" placeholder="请输入" type="text"
+                       class="layui-input" maxlength="20"
+                       lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">订单id</label>
+            <div class="layui-input-block">
+                <input name="order_id" placeholder="请输入订单id" type="text"
+                       class="layui-input" maxlength="20"
+                       lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">用户表id</label>
+            <div class="layui-input-block">
+                <input name="userid" placeholder="请输入用户表id" type="text"
+                       class="layui-input" maxlength="20"
+                       lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">支付平台:1-支付宝,2-微信</label>
+            <div class="layui-input-block">
+                <input name="pay_platform" placeholder="请输入支付平台:1-支付宝,2-微信" type="text"
+                       class="layui-input" maxlength="20"
+                       lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">支付流水号</label>
+            <div class="layui-input-block">
+                <input name="platform_number" placeholder="请输入支付流水号" type="text"
+                       class="layui-input" maxlength="20"
+                       lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">支付状态</label>
+            <div class="layui-input-block">
+                <input name="platform_status" placeholder="请输入支付状态" type="text"
+                       class="layui-input" maxlength="20"
+                       lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">生成时间</label>
+            <div class="layui-input-block">
+                <input name="create_time" placeholder="请输入创建时间" type="text"
+                       class="layui-input" maxlength="20"
+                       lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">更新时间</label>
+            <div class="layui-input-block">
+                <input name="update_time" placeholder="请输入更新时间" type="text"
+                       class="layui-input" maxlength="20"
+                       lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item model-form-footer">
+            <button class="layui-btn layui-btn-primary" ew-event="closeDialog" type="button">取消</button>
+            <button class="layui-btn" lay-filter="payinfo-form-submit" lay-submit>保存</button>
+        </div>
+    </form>
+</script>
+
+<!-- 表格操作列 -->
+<!--<script type="text/html" id="payinfo-table-bar">-->
+<!--    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="edit">修改</a>-->
+<!--    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>-->
+<!--</script>-->
+
+<script>
+    layui.use(['form', 'table', 'util', 'config', 'admin', 'formSelects', 'laydate'], function () {
+        var form = layui.form;
+        var table = layui.table;
+        var config = layui.config;
+        var layer = layui.layer;
+        var util = layui.util;
+        var admin = layui.admin;
+        var laydate = layui.laydate;
+        var formSelects = layui.formSelects;
+
+        //通过时间范围查询
+        laydate.render({
+            elem: '#pay_create_time',
+            trigger: 'click',
+            range: true,
+            theme: '#1e9fff',
+            done: function (value, date, endDate) {
+                var key = 'createTime';
+                table.reload('payinfo-table', {where: {searchKey: key, searchValue: value}});
+            }
+        });
+
+        // 监听支付方式下拉框
+        form.on('select(payMethods-search-key)', function (e) {
+            var key = 'payPlatform';
+            var value = e.value;
+            table.reload('payinfo-table', {where: {searchKey: key, searchValue: value}});
+        });
+
+        // 监听支付状态下拉框
+        form.on('select(payStatus-search-key)', function (e) {
+            var key = 'platformStatus';
+            var value = e.value;
+            table.reload('payinfo-table', {where: {searchKey: key, searchValue: value}});
+        });
+
+
+        //渲染表格
+        table.render({
+            elem: '#payinfo-table',
+            url: config.base_server + 'api-user/payinfo/list',
+            where: {
+                access_token: config.getToken().access_token
+            },
+            page: {first: '首页',last: '尾页'},
+            cols: [[
+                {type: 'numbers'},
+                {field: 'orderId', align: 'center', sort: true, title: '订单编号'},
+                {field: 'userId', align: 'center', sort: true, title: '用户编号'},
+                {
+                    field: 'payPlatform', align: 'center', templet: function (d) {
+                        const weixin = '<img width="100px" height="40px" src="assets/images/pay/weixin.png">';
+                        const zhifubao = '<img width="100px" height="40px" src="assets/images/pay/zhifubao.png">';
+                        const yinlian = '<img width="100px" height="40px" src="assets/images/pay/yinlian.png">';
+                        switch (d.payPlatform) {
+                            case 1:
+                                return weixin;
+                                break;
+                            case 2:
+                                return zhifubao;
+                                break;
+                            case 3:
+                                return yinlian;
+                                break;
+                            default:
+                                return ''
+                        }
+                    }, title: '支付平台'
+                },
+                {field: 'platformNumber', align: 'center', sort: true, title: '支付流水号'},
+                {field: 'platformStatus', align: 'center', sort: true, title: '支付状态'},
+                {field: 'updateTime', align: 'center', sort: true, title: '更新时间'},
+                {field: 'createTime', align: 'center', sort: true, title: '生成时间'},
+                // {align: 'center', toolbar: '#payinfo-table-bar', title: '操作', width: 250}
+            ]]
+        });
+
+        // // 添加按钮点击事件
+        // $('#payinfo-btn-add').click(function () {
+        //     showEditModel();
+        // });
+        //
+        // // 表单提交事件
+        // form.on('submit(payinfo-form-submit)', function (data) {
+        //     layer.load(2);
+        //     var url = "";
+        //     if (data.field.id == '') {
+        //         url = 'api-user/payinfo/' + 'save';
+        //     } else {
+        //         url = 'api-user/payinfo/' + 'update';
+        //     }
+        //     admin.req(url, JSON.stringify(data.field), function (data) {
+        //         layer.closeAll('loading');
+        //         if (data.code == 0) {
+        //             layer.msg(data.msg, {icon: 1, time: 500});
+        //             table.reload('payinfo-table');
+        //             layer.closeAll('page');
+        //         } else {
+        //             layer.msg(data.msg, {icon: 2, time: 500});
+        //         }
+        //     }, $('#payinfo-form').attr('method'));
+        //     return false;
+        // });
+        //
+        // // 工具条点击事件
+        // table.on('tool(payinfo-table)', function (obj) {
+        //     var data = obj.data;
+        //     if (obj.event === 'edit') { //修改
+        //         showEditModel(data);
+        //     } else if (obj.event === 'del') { //删除
+        //         doDelete(obj);
+        //     }
+        // });
+        //
+        // // 搜索按钮点击事件
+        // $('#payinfo-btn-search').click(function () {
+        //     var key = $('#payinfo-search-key').val();
+        //     var value = $('#payinfo-edit-value').val();
+        //     table.reload('payinfo-table', {where: {searchKey: key, searchValue: value}});
+        // });
+        //
+        // // 显示编辑弹窗
+        // var showEditModel = function (data) {
+        //     layer.open({
+        //         type: 1,
+        //         title: data ? '修改' : '添加',
+        //         area: '450px',
+        //         offset: '120px',
+        //         content: $('#payinfo-model').html(),
+        //         success: function () {
+        //             $('#payinfo-form')[0].reset();
+        //             $('#payinfo-form').attr('method', 'POST');
+        //             if (data) {
+        //                 $("input[name='code']").attr('disabled', true);
+        //                 $("input[name='code']").attr('class', "layui-input layui-disabled");
+        //                 form.val('payinfo-form', data);
+        //                 $('#payinfo-form').attr('method', 'POST');
+        //             }
+        //         }
+        //     });
+        // };
+        //
+        // // 删除
+        // var doDelete = function (obj) {
+        //     layer.confirm('确定要删除吗？', function (i) {
+        //         layer.close(i);
+        //         layer.load(2);
+        //         admin.req('api-user/payinfo/delete/' + obj.data.id, {}, function (data) {
+        //             layer.closeAll('loading');
+        //             if (data.code == 0) {
+        //                 layer.msg(data.msg, {icon: 1, time: 500});
+        //                 obj.del();
+        //             } else {
+        //                 layer.msg(data.msg, {icon: 2, time: 500});
+        //             }
+        //         }, 'DELETE');
+        //     });
+        // };
+
+    });
+
+</script>

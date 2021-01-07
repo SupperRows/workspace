@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.open.capacity.user.dao.RefundDao">
+
+    <resultMap type="com.open.capacity.user.model.Refund" id="refundMap">
+        <result property="id" column="id"/>
+        <result property="orderId" column="order_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="refundTo" column="refund_to"/>
+        <result property="refundDirection" column="refund_direction"/>
+        <result property="refundOtherReson" column="refund_other_reson"/>
+        <result property="backMoney" column="back_money"/>
+        <result property="refundTradeNo" column="refund_trade_no"/>
+        <result property="refundRemark" column="refund_remark"/>
+        <result property="refundTime" column="refund_time"/>
+        <result property="shopRejectReason" column="shop_reject_reason"/>
+        <result property="refundStatus" column="refund_status"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <insert id="save" parameterType="com.open.capacity.user.model.Refund">
+        insert into refund(id,order_id,user_id,refund_to,refund_direction,refund_other_reson,back_money,refund_trade_no,refund_remark,shop_reject_reason,refund_status,create_time)
+                values (#{ id},#{ orderId},#{ userId},#{ refundTo},#{ refundDirection},#{ refundOtherReson},#{ backMoney},#{ refundTradeNo},#{ refundRemark},#{ shopRejectReason},#{ refundStatus},now())
+    </insert>
+
+    <update id="update" parameterType="com.open.capacity.user.model.Refund">
+        update refund
+        <set>
+            <if test="id != null">
+                id = #{id},
+            </if>
+            <if test="orderId != null">
+                order_id = #{orderId},
+            </if>
+            <if test="userId != null">
+                user_id = #{userId},
+            </if>
+            <if test="refundTo != null">
+                refund_to = #{refundTo},
+            </if>
+            <if test="refundDirection != null">
+                refund_direction = #{refundDirection},
+            </if>
+            <if test="refundOtherReson != null">
+                refund_other_reson = #{refundOtherReson},
+            </if>
+            <if test="backMoney != null">
+                back_money = #{backMoney},
+            </if>
+            <if test="refundTradeNo != null">
+                refund_trade_no = #{refundTradeNo},
+            </if>
+            <if test="refundRemark != null">
+                refund_remark = #{refundRemark},
+            </if>
+            <if test="refundTime != null">
+                refund_time = now(),
+            </if>
+            <if test="shopRejectReason != null">
+                shop_reject_reason = #{shopRejectReason},
+            </if>
+            <if test="refundStatus != null">
+                refund_status = #{refundStatus},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="long" flushCache="true">
+        delete from refund where id = #{id}
+    </delete>
+
+    <select id="findAll" parameterType="map" resultMap="refundMap">
+        select * from refund t
+        <include refid="where"/>
+        order by t.create_time desc
+    </select>
+    <sql id="where">
+        <where>
+            <if test="id != null and id != ''">
+                and t.id = #{id}
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='orderId'">
+                and t.order_id = #{searchValue}
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='userId'">
+                and t.user_id = #{searchValue}
+            </if>
+            <if test="orderId != null and orderId != ''">
+                and t.order_id = #{orderId}
+            </if>
+            <if test="userId != null and userId != ''">
+                and t.user_id = #{userId}
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='refundTradeNo'">
+                and t.refund_trade_no = #{searchValue}
+            </if>
+            <if test="refundTo != null and refundTo != ''">
+                and t.refund_to = #{refundTo}
+            </if>
+            <if test="refundStatus != null and refundStatus != ''">
+                and t.refund_status = #{refundStatus}
+            </if>
+            <if test="refundTime != null and refundTime != ''">
+                t.refund_time between substring_index(#{refundTime}, ' - ', 1) and substring_index(#{refundTime}, ' - ',-1)
+            </if>
+            <if test="createTime != null and createTime != ''">
+                t.create_time between substring_index(#{createTime}, ' - ', 1) and substring_index(#{createTime}, ' - ',-1)
+            </if>
+            <!--            <if test="searchKey != null and searchKey != '' and searchKey=='refundReson'">-->
+            <!--                and t.refund_reson like concat('%', #{searchValue}, '%')-->
+            <!--            </if>-->
+            <!--            <if test="searchKey != null and searchKey != '' and searchKey=='refundOtherReson'">-->
+            <!--                and t.refund_other_reson like concat('%', #{searchValue}, '%')-->
+            <!--            </if>-->
+            <!--            <if test="searchKey != null and searchKey != '' and searchKey=='backMoney'">-->
+            <!--                and t.back_money like concat('%', #{searchValue}, '%')-->
+            <!--            </if>-->
+            <!--            <if test="searchKey != null and searchKey != '' and searchKey=='refundRemark'">-->
+            <!--                and t.refund_remark like concat('%', #{searchValue}, '%')-->
+            <!--            </if>-->
+        </where>
+    </sql>
+</mapper>

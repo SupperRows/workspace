@@ -1,0 +1,322 @@
+<div class="layui-card">
+    <div class="layui-card-body">
+        <div class="layui-carousel" id="test1" lay-filter="test1">
+            <div id="LAY_swipper" carousel-item="">
+
+            </div>
+        </div>
+    </div>
+</div>
+<div class="layui-card">
+    <div class="layui-card-body">
+        <div class="layui-form toolbar">
+            <button id="swipper-btn-add" class="layui-btn icon-btn layui-btn-warm"><i class="layui-icon">&#xe654;</i>添加
+            </button>
+        </div>
+
+        <!-- 数据表格 -->
+        <table class="layui-table" id="swipper-table" lay-filter="swipper-table"></table>
+    </div>
+</div>
+
+<!-- 表单弹窗 -->
+<script type="text/html" id="swipper-model">
+    <form id="swipper-form" lay-filter="swipper-form" class="layui-form model-form">
+        <div class="layui-form-item">
+            <label class="layui-form-label">类型</label>
+            <div class="layui-input-block">
+                <input name="type" placeholder="请输入类型" type="text"
+                       class="layui-input" maxlength="10"
+                       lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">路径</label>
+            <div class="layui-input-block">
+                <input name="url" placeholder="请输入路径" type="text"
+                       class="layui-input"
+                       lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item model-form-footer">
+            <div class="layui-upload-list">
+                <img class="layui-upload-img" id="swipper-image">
+            </div>
+            <button class="layui-btn" id="upload-img" type="button">上传轮播图</button>
+        </div>
+    </form>
+</script>
+
+<!-- 表格操作列 -->
+<script type="text/html" id="swipper-table-bar">
+    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="edit">修改</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+<script>
+    layui.use(['form', 'table', 'util', 'config', 'admin', 'formSelects', 'upload', 'carousel'], function () {
+        var $ = layui.jquery
+            , upload = layui.upload;
+        var form = layui.form;
+        var carousel = layui.carousel;
+        var table = layui.table;
+        var config = layui.config;
+        var layer = layui.layer;
+        var util = layui.util;
+        var admin = layui.admin;
+        var formSelects = layui.formSelects;
+
+        var getSwipperList = function getSwipperList() {
+            const reqdata = {
+                access_token: config.getToken().access_token
+            }
+            admin.req('api-user/swipper/list', reqdata, function (res) {
+                if (res.code == 0) {
+                    // 渲染下拉框选项
+                    $.each(res.data, function () {
+                        var str = '<div>\n' +
+                            '         <img src="' + this.url + '" alt="" style="width: 100%;height: 420px;">\n' +
+                            '      </div>';
+                        $('#LAY_swipper').append(str);
+                        //改变下时间间隔、动画类型、高度
+                        var ins = carousel.render({
+                            elem: '#test1'
+                            , interval: 5000
+                            , arrow: 'always'
+                            , anim: 'default'
+                            , width: '100%'
+                            , height: '420px'
+                        });
+                        ins.reload({
+                            elem: '#test1'
+                            , interval: 5000
+                            , arrow: 'always'
+                            , anim: 'default'
+                            , width: '100%'
+                            , height: '420px'
+                        });
+                    })
+                } else {
+                    layer.msg('轮播加载失败！！', {icon: 2, time: 2000});
+                }
+                console.log(res)
+            }, 'GET')
+        }
+        getSwipperList();
+
+        //渲染表格
+        layer.load(2);
+        table.render({
+            elem: '#swipper-table',
+            url: config.base_server + 'api-user/swipper/list',
+            where: {
+                access_token: config.getToken().access_token
+            },
+            page: false,
+            cols: [[
+                {type: 'numbers'},
+                {align: 'center', field: 'type', sort: true, title: '类型'},
+                {
+                    field: 'url', sort: true, title: '路径', templet: function (d) {
+                        let res = '<a href="' + d.url + '" target="_blank" title="点击查看大图"><img src="' + d.url + '"/></a>'
+                        return res;
+                    }
+                },
+                {field: 'updateTime', sort: true, title: '最后修改时间', align: 'center'},
+                {field: 'createTime', sort: true, title: '创建时间', align: 'center'},
+                {align: 'center', toolbar: '#swipper-table-bar', title: '操作', width: 250}
+            ]
+            ],
+            done: function (res, curr, count) {
+                $(".layui-table-cell").css("height", "auto");
+                layer.closeAll('loading');
+            }
+        });
+
+        // 添加按钮点击事件
+        $('#swipper-btn-add').click(function () {
+            doSave();
+        });
+
+        // 工具条点击事件
+        table.on('tool(swipper-table)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'edit') { //修改
+                doUpdate(data);
+            } else if (obj.event === 'del') { //删除
+                doDelete(obj);
+            }
+        });
+
+        // 删除
+        var doDelete = function (obj) {
+            layer.confirm('确定要删除吗？', function (i) {
+                layer.close(i);
+                layer.load(2);
+                admin.req('api-user/swipper/delete/' + obj.data.id, {}, function (data) {
+                    layer.closeAll('loading');
+                    if (data.code == 0) {
+                        layer.msg(data.msg, {icon: 1, time: 500});
+                        obj.del();
+                    } else {
+                        layer.msg(data.msg, {icon: 2, time: 500});
+                    }
+                }, 'DELETE');
+            });
+        };
+
+        //编辑
+        var doUpdate = function (data) {
+            layer.open({
+                type: 1,
+                area: ['40%'],
+                title: ['编辑'],
+                btn: ['保存', '取消'],
+                btnAlign: 'c',
+                shade: 0.5,
+                content: $('#swipper-model').html(),
+                success: function (layero, index) {
+                    $("input[name='type']").val(data.type);
+                    $("input[name='url']").val(data.url);
+                    //普通图片上传
+                    var uploadInst = upload.render({
+                        elem: '#upload-img',
+                        url: config.base_server + 'api-file/files-anon',
+                        accept: 'file',
+                        auto: true,
+                        before: function (obj) {
+                            //预读本地文件示例，不支持ie8
+                            layer.load(); //上传loading
+                            this.data = {access_token: config.getToken().access_token};
+                            //预读本地文件示例，不支持ie8
+                            obj.preview(function (index, file, result) {
+                                $('#swipper-image').attr('src', result).attr('width', '50px').attr('height', '50px');
+                            });
+                        },
+                        done: function (res) {
+                            $("input[name='url']").val(res.url);
+                            layer.closeAll('loading');
+                        },
+                        error: function () {
+                            layer.closeAll('loading');
+                            //演示失败状态，并实现重传
+                            var demoText = $('#demoText');
+                            demoText.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>');
+                            demoText.find('.demo-reload').on('click', function () {
+                                uploadInst.upload();
+                            });
+                        }
+                    });
+                },
+                yes: function (index, layero) {
+                    const type = $("input[name='type']").val();
+                    const url = $("input[name='url']").val();
+                    const reqdata = {
+                        id: data.id,
+                        type: type,
+                        url: url,
+                    }
+                    admin.req('api-user/swipper/update', JSON.stringify(reqdata), function (res) {
+                        if (res.code == 0) {
+                            layer.alert(res.msg, {
+                                icon: 1,
+                                title: '提示'
+                            }, function (i) {
+                                debugger;
+                                layer.close(i);
+                                layer.close(index); // 关闭弹出层
+                                $("#swipper-form")[0].reset() // 重置form
+                            })
+                            table.reload('swipper-table', { // 重载表格
+                                page: {
+                                    curr: 1
+                                }
+                            })
+                        } else {
+                            layer.msg(res.msg, {
+                                icon: 5
+                            });
+                        }
+                    }, 'POST')
+                }
+            })
+        };
+
+        //添加
+        var doSave = function () {
+            layer.open({
+                type: 1,
+                area: ['40%'],
+                title: ['新增用户信息'],
+                btn: ['保存', '取消'],
+                btnAlign: 'c',
+                shade: 0.5,
+                content: $('#swipper-model').html(),
+                btn: ['确定', '取消'],
+                success: function (layero, index) {
+                    //普通图片上传
+                    var uploadInst = upload.render({
+                        elem: '#upload-img',
+                        url: config.base_server + 'api-file/files-anon',
+                        accept: 'file',
+                        auto: true,
+                        before: function (obj) {
+                            //预读本地文件示例，不支持ie8
+                            layer.load(); //上传loading
+                            this.data = {access_token: config.getToken().access_token};
+                            //预读本地文件示例，不支持ie8
+                            obj.preview(function (index, file, result) {
+                                $('#swipper-image').attr('src', result).attr('width', '50px').attr('height', '50px');
+                            });
+                        },
+                        done: function (res) {
+                            $("input[name='url']").val(res.url);
+                            layer.closeAll('loading');
+                        },
+                        error: function () {
+                            layer.closeAll('loading');
+                            //演示失败状态，并实现重传
+                            var demoText = $('#demoText');
+                            demoText.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>');
+                            demoText.find('.demo-reload').on('click', function () {
+                                uploadInst.upload();
+                            });
+                        }
+                    });
+                },
+                yes: function (index, layero) {
+                    const type = $("input[name='type']").val();
+                    const url = $("input[name='url']").val();
+                    const reqdata = {
+                        id: 0,
+                        type: type,
+                        url: url,
+                    }
+                    admin.req('api-user/swipper/save', JSON.stringify(reqdata), function (res) {
+                        if (res.code == 0) {
+                            layer.alert(res.msg, {
+                                icon: 1,
+                                title: '提示'
+                            }, function (i) {
+                                layer.close(i);
+                                layer.close(index); // 关闭弹出层
+                                $("#swipper-form")[0].reset() // 重置form
+                            })
+                            table.reload('swipper-table', { // 重载表格
+                                page: {
+                                    curr: 1
+                                }
+                            })
+                        } else {
+                            layer.msg(res.msg, {
+                                icon: 5
+                            });
+                        }
+                    }, "PUT")
+                }
+            })
+        }
+
+    });
+
+</script>

@@ -1,0 +1,328 @@
+<div class="layui-card">
+    <div class="layui-card-body">
+        <div class="layui-form toolbar">
+            <div class="layui-inline">
+                <label>退款状态：</label>
+                <select id="refund-state" lay-filter="refund-state" autocomplete="off">
+                    <option value="">-请选择-</option>
+                    <option value="-1">已驳回</option>
+                    <option value="1">已退款</option>
+                    <option value="0">审核中</option>
+                </select>
+                <label>退款方向：</label>
+                <select id="refund-direction-state" lay-filter="refund-direction-state" autocomplete="off">
+                    <option value="">-请选择-</option>
+                    <option value="0">微信</option>
+                    <option value="1">支付宝</option>
+                    <option value="2">银联</option>
+                </select>
+                <label>退款时间：</label>
+                <div class="layui-input-inline">
+                    <input class="layui-input" id="refund_time" type="text" autocomplete="off"
+                           placeholder=" 开始 - 结束">
+                </div>
+                <label>提交申请时间：</label>
+                <div class="layui-input-inline">
+                    <input class="layui-input" id="toexamine_time" type="text" autocomplete="off"
+                           placeholder=" 开始 - 结束">
+                </div>
+            </div>
+            <div class="layui-inline" style="margin-top: 10px;">
+                搜索：
+                <select id="refund-search-key" autocomplete="off">
+                    <option value="">-请选择-</option>
+                    <option value="orderId">订单编号</option>
+                    <option value="userId">用户编号</option>
+                    <option value="refundTradeNo">退款流水号</option>
+                </select>&emsp;
+                <input id="refund-edit-value" class="layui-input search-input" type="text" placeholder="输入关键字"/>&emsp;
+                <button id="refund-btn-search" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>搜索
+                </button>
+                <!--                <button id="refund-btn-add" class="layui-btn icon-btn"><i class="layui-icon">&#xe654;</i>添加</button>-->
+            </div>
+        </div>
+
+        <!-- 数据表格 -->
+        <table class="layui-table" id="refund-table" lay-filter="refund-table"></table>
+    </div>
+</div>
+
+<!--驳回弹窗-->
+<script type="text/html" id="reject-model">
+    <form id="reject-form" lay-filter="reject-form" class="layui-form model-form">
+        <div class="layui-form-item layui-form-text">
+            <div class="layui-inline" style="padding-left: 40px;">
+                <h3>温馨提示：驳回后订单将恢复为待发货状态,建议与客户充分沟通后操作。</h3>
+            </div>
+        </div>
+        <div class="layui-form-item layui-form-text">
+            <label class="layui-form-label">驳回原因</label>
+            <div class="layui-input-block">
+					<textarea id="refundRemark" class="layui-textarea" maxlength="50"
+                              placeholder="请输入驳回原因，字数50字以内。 "></textarea>
+            </div>
+        </div>
+    </form>
+</script>
+
+<!--审核通过弹窗-->
+<!--<script type="text/html" id="refund-model">-->
+<!--    <form id="refund-form" lay-filter="refund-form" class="layui-form model-form">-->
+<!--<div class="layui-form-item">-->
+<!--    <label class="layui-form-label">管理员退款流水号</label>-->
+<!--    <div class="layui-input-block">-->
+<!--        <input name="refund_trade_no" placeholder="请输入管理员退款流水号" type="text"-->
+<!--               class="layui-input" maxlength="20"-->
+<!--               lay-verify="required" required/>-->
+<!--    </div>-->
+<!--</div>-->
+<!--<div class="layui-form-item">-->
+<!--    <label class="layui-form-label">管理员退款方向(0：系统)</label>-->
+<!--    <div class="layui-input-block">-->
+<!--        <input name="refund_to" placeholder="请输入管理员退款方向(0：系统)" type="text"-->
+<!--               class="layui-input" maxlength="20"-->
+<!--               lay-verify="required" required/>-->
+<!--    </div>-->
+<!--</div>-->
+<!--    </form>-->
+<!--</script>-->
+
+
+<!-- 表格操作列 -->
+<script type="text/html" id="refund-table-bar">
+    {{#  if(d.refundStatus == 0){ }}
+    <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="pass">通过审核</a>
+    <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="reject">驳回</a>
+    {{#  } }}
+    <!--    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="edit">修改</a>-->
+    <!--    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>-->
+</script>
+
+<script>
+    layui.use(['form', 'table', 'util', 'laydate', 'config', 'admin', 'formSelects'], function () {
+        var form = layui.form;
+        var table = layui.table;
+        var config = layui.config;
+        var layer = layui.layer;
+        var util = layui.util;
+        var admin = layui.admin;
+        var laydate = layui.laydate;
+        var formSelects = layui.formSelects;
+
+        //通过时间范围查询
+        laydate.render({
+            elem: '#refund_time',
+            trigger: 'click',
+            range: true,
+            theme: '#1e9fff',
+            done: function (value, date, endDate) {
+                table.reload('refund-table', {where: {refundTime: value}});
+            }
+        });
+        laydate.render({
+            elem: '#toexamine_time',
+            trigger: 'click',
+            range: true,
+            theme: '#1e9fff',
+            done: function (value, date, endDate) {
+                table.reload('refund-table', {where: {createTime: value}});
+            }
+        });
+        //渲染表格
+        table.render({
+            elem: '#refund-table',
+            url: config.base_server + 'api-user/refund/list',
+            where: {
+                access_token: config.getToken().access_token
+            },
+            page: true,
+            cols: [[
+                {type: 'numbers'},
+                {field: 'orderId', align: 'center', width: '200', title: '订单编号'},
+                {field: 'userId', align: 'center', width: '200', title: '用户编号'},
+                {field: 'refundOtherReson', align: 'center', width: '200', title: '申请退款原因'},
+                {field: 'refundDirection', align: 'center', width: '200', title: '退款说明'},
+                {field: 'backMoney', align: 'center', width: '200', title: '退款金额'},
+                {
+                    field: 'refundStatus', align: 'center', width: '150', templet: function (d) {
+                        const apply = '<span class="layui-badge" style="background-color:#00bfff;">审核中</span>';
+                        const achieve = '<span class="layui-badge" style="background-color:#8bc34a;">已退款</span>';
+                        const fail = '<span class="layui-badge" style="background-color:#ff0000;">已驳回</span>'
+                        switch (d.refundStatus) {
+                            case 0:
+                                return apply;
+                                break;
+                            case 1:
+                                return achieve;
+                                break;
+                            case -1:
+                                return fail;
+                                break;
+                        }
+                    }, title: '退款状态'
+                },
+                {field: 'refundTradeNo', align: 'center', width: '200', title: '退款流水号'},
+                {field: 'refundRemark', align: 'center', width: '200', title: '驳回原因'},
+                {
+                    field: 'refundTo', align: 'center', width: '200', templet: function (d) {
+                        const wechat = '<span class="layui-badge" style="background-color:#8bc34a;">微信</span>';
+                        const zhifubao = '<span class="layui-badge" style="background-color:#00bfff;">支付宝</span>';
+                        const bank = '<span class="layui-badge" style="background-color:#d435ff;">银联</span>';
+                        switch (d.refundTo) {
+                            case 0:
+                                return wechat;
+                                break;
+                            case 1:
+                                return zhifubao;
+                                break;
+                            case 2:
+                                return bank;
+                                break;
+                        }
+                    }, title: '退款方向'
+                },
+                {field: 'refundTime', align: 'center', width: '200', title: '处理时间'},
+                {field: 'createTime', align: 'center', width: '200', sort: true, title: '提交申请时间'},
+                {fixed: 'right', align: 'center', toolbar: '#refund-table-bar', title: '操作', width: 150}
+            ]]
+        });
+
+        // 监听退款状态下拉框
+        form.on('select(refund-state)', function (e) {
+            var value = e.value;
+            table.reload('refund-table', {where: {refundStatus: value}});
+        });
+
+        // 监听退款方向下拉框
+        form.on('select(refund-direction-state)', function (e) {
+            var value = e.value;
+            table.reload('refund-table', {where: {refundTo: value}});
+        });
+
+        // 表单提交事件
+        form.on('submit(refund-form-submit)', function (data) {
+            layer.load(2);
+            var url = "";
+            if (data.field.id == '') {
+                url = 'api-user/refund/' + 'save';
+            } else {
+                url = 'api-user/refund/' + 'update';
+            }
+            admin.req(url, JSON.stringify(data.field), function (data) {
+                layer.closeAll('loading');
+                if (data.code == 0) {
+                    layer.msg(data.msg, {icon: 1, time: 500});
+                    table.reload('refund-table');
+                    layer.closeAll('page');
+                } else {
+                    layer.msg(data.msg, {icon: 2, time: 500});
+                }
+            }, $('#refund-form').attr('method'));
+            return false;
+        });
+
+        // 工具条点击事件
+        table.on('tool(refund-table)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'pass') { //审核通过
+                doPass(data);
+            } else if (obj.event === 'reject') { //驳回请求
+                doReject(data);
+            }
+        });
+
+        // 搜索按钮点击事件
+        $('#refund-btn-search').click(function () {
+            var key = $('#refund-search-key').val();
+            var value = $('#refund-edit-value').val();
+            table.reload('refund-table', {where: {searchKey: key, searchValue: value}});
+        });
+
+        //通过审核
+        var doPass = function (data) {
+            layer.confirm('通过审核后该笔订单款将原地返还给客户', {
+                title: '审核退款订单',
+                btn: ['取消', '确定']
+            }, function (index) {
+                layer.close(index);
+            }, function () {
+                const reqdata = {
+                    order: {
+                        orderId: data.orderId,
+                        flag: 7
+                    },
+                    refund: {
+                        id: data.id,
+                        refundTime: '2020-11-07 19:05:40',
+                        refundStatus: 1
+                    }
+                }
+                admin.req('api-user/refund/toexamine/', JSON.stringify(reqdata), function (data) {
+                    if (data.code == 0) {
+                        layer.msg(data.msg, {icon: 1, time: 1000});
+                        table.reload('refund-table', { // 重载表格
+                            page: {
+                                curr: 1
+                            }
+                        });
+                    } else {
+                        layer.msg(data.msg, {icon: 2, time: 1000});
+                    }
+                }, 'POST');
+            });
+        };
+        //驳回请求
+        var doReject = function (data) {
+            layer.open({
+                type: 1,
+                area: ['35%'],
+                title: ['审核不通过'],
+                shadeClose: true,
+                shade: 0.5,
+                btn: ['确定', '取消'],
+                content: $('#reject-model').html(),
+                success: function (layero, index) {
+                },
+                yes: function (index, layero) {
+                    const refundRemark = $("#refundRemark").val()
+                    if (refundRemark == '' || refundRemark == null) {
+                        layer.msg('请填写驳回原因!', {time: 1000});
+                    } else {
+                        const reqdata = {
+                            order: {
+                                orderId: data.orderId,
+                                flag: 2
+                            },
+                            refund: {
+                                id: data.id,
+                                refundTime: '2020-11-07 19:05:40',
+                                refundStatus: -1,
+                                refundRemark: refundRemark
+                            }
+                        }
+                        admin.req('api-user/refund/toexamine/', JSON.stringify(reqdata), function (data) {
+                            if (data.code == 0) {
+                                layer.alert(data.msg, {
+                                    icon: 1,
+                                    title: '提示'
+                                }, function (i) {
+                                    layer.close(i);
+                                    layer.close(index); // 关闭弹出层
+                                })
+                                table.reload('order-table', { // 重载表格
+                                    page: {
+                                        curr: 1
+                                    }
+                                })
+                            } else {
+                                layer.msg(data.msg, {icon: 2, time: 1000});
+                            }
+                        }, 'POST');
+                    }
+                }
+            });
+        }
+
+    });
+
+</script>

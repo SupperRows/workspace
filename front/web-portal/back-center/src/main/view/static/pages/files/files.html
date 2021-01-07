@@ -1,0 +1,195 @@
+<div class="layui-card">
+    <div class="layui-card-header">
+        <h2 class="header-title">文件中心</h2>
+        <span class="layui-breadcrumb pull-right">
+          <a href="#!home_console">首页</a>
+          <a><cite>文件中心</cite></a>
+        </span>
+    </div>
+    <div class="layui-card-body">
+        <div class="layui-form toolbar">
+            搜索：<input class="layui-input search-input" id="files-edit-search" placeholder="输入关键字" type="text"/>&emsp;
+            <button class="layui-btn icon-btn" id="files-btn-search"><i class="layui-icon">&#xe615;</i>搜索</button>
+            <button id="file-btn-add" class="layui-btn icon-btn layui-btn-warm"><i class="layui-icon">&#xe654;</i>添加图片
+            </button>
+        </div>
+
+        <!-- 数据表格 -->
+        <table class="layui-table" id="files-table" lay-filter="files-table"></table>
+    </div>
+</div>
+
+<!-- 表格操作列 -->
+<script id="files-table-bar" type="text/html">
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+<!-- 表单弹窗 -->
+<script type="text/html" id="file-model">
+    <form id="file-form" lay-filter="file-form" class="layui-form model-form">
+        <div class="layui-form-item">
+            <label class="layui-form-label">图片地址</label>
+            <div class="layui-input-block">
+                <input name="file-url" disabled placeholder="请输入图片链接" type="text"
+                       class="layui-input" maxlength="20" autocomplete="off"
+                       lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item model-form-footer">
+            <div class="layui-upload-list">
+                <img class="layui-upload-img" id="file-img">
+            </div>
+            <button class="layui-btn" id="upload-img" type="button">本地上传</button>
+        </div>
+    </form>
+</script>
+
+<script>
+
+    layui.use(['form', 'table', 'util', 'config', 'upload', 'admin'], function () {
+        var form = layui.form;
+        var table = layui.table;
+        var config = layui.config;
+        var $ = layui.jquery
+            , upload = layui.upload;
+        var layer = layui.layer;
+        var util = layui.util;
+        var admin = layui.admin;
+
+        // 上传图片
+        $('#file-btn-add').click(function () {
+            uploadFile();
+        });
+
+        // 渲染表格
+        table.render({
+            elem: '#files-table',
+            // url: config.base_server + 'user_query.json',
+            url: config.base_server + 'api-file/files',
+            method: 'GET',
+            where: {
+                access_token: config.getToken().access_token
+            },
+            page: {first: '首页',last: '尾页'},
+            cols: [[
+                {type: 'numbers'},
+                {field: 'id', sort: true, title: '编号'},
+                {field: 'name', sort: true, title: '流媒体名称'},
+                {field: 'size', sort: true, title: '文件大小(B)'},
+                {field: 'contentType', sort: true, title: '媒体类型'},
+                {field: 'source', sort: true, title: 'OSS运营商'},
+                {
+                    sort: true, templet: function (d) {
+                        return util.toDateString(d.createTime);
+                    }, title: '创建时间'
+                },
+                {
+                    field: 'url', width: 250, align: 'center', templet: function (d) {
+                        if (d.isImg) {
+                            return '<img src="' + d.url + '" class="layui-badge layui-bg-gray"></img>';
+                        } else {
+                            return '<a href="' + d.url + '" class="layui-badge layui-bg-gray">' + d.name + '</a>';
+                        }
+                    }, title: '内容'
+                },
+                {align: 'center', width: 80, toolbar: '#files-table-bar', title: '操作'}
+            ]]
+        });
+
+        // 工具条点击事件
+        table.on('tool(files-table)', function (obj) {
+            var data = obj.data;
+            var layEvent = obj.event;
+
+            if (layEvent === 'del') { // 删除
+                doDelete(obj);
+            }
+        });
+
+
+        // 删除
+        var doDelete = function (obj) {
+            layer.confirm('确定要删除吗？', function (i) {
+                layer.close(i);
+                layer.load(2);
+                admin.req('api-file/files/' + obj.data.id, {}, function (data) {
+                    layer.closeAll('loading');
+                    if (data.code == 0) {
+                        layer.msg(data.msg, {icon: 1, time: 500});
+                        obj.del();
+                    } else {
+                        layer.msg(data.msg, {icon: 2, time: 500});
+                    }
+                }, 'DELETE');
+            });
+        };
+
+        var uploadFile = function () {
+            layer.open({
+                type: 1,
+                area: ['30%'],
+                title: ['上传图片'],
+                btn: ['保存', '取消'],
+                shadeClose: true,
+                btnAlign: 'c',
+                shade: 0.5,
+                content: $('#file-model').html(),
+                success: function (layero, index) {
+                    var uploadInst = upload.render({
+                        elem: '#upload-img',
+                        url: config.base_server + 'api-file/files-anon',
+                        accept: 'file',
+                        auto: true,
+                        before: function (obj) {
+                            //预读本地文件示例，不支持ie8
+                            layer.load(); //上传loading
+                            this.data = {access_token: config.getToken().access_token};
+                            //预读本地文件示例，不支持ie8
+                            obj.preview(function (index, file, result) {
+                                $('#file-url').attr('src', result).attr('width', '50px').attr('height', '50px');
+                            });
+                        },
+                        done: function (res) {
+                            $("input[name='file-url']").val(res.url);
+                            layer.closeAll('loading');
+                        },
+                        error: function () {
+                            layer.closeAll('loading');
+                            //演示失败状态，并实现重传
+                            var demoText = $('#demoText');
+                            demoText.html('<span style="color: #FF5722;">上传失败</span> <a class="layui-btn layui-btn-xs demo-reload">重试</a>');
+                            demoText.find('.demo-reload').on('click', function () {
+                                uploadInst.upload();
+                            });
+                        }
+                    });
+                },
+                yes: function (index, layero) {
+                    layer.alert('上传成功!', {
+                        icon: 1,
+                        title: '提示'
+                    }, function (i) {
+                        layer.close(i);
+                        layer.close(index); // 关闭弹出层
+                        $("#file-form")[0].reset() // 重置form
+                    })
+                    table.reload('files-table', { // 重载表格
+                        page: {
+                            curr: 1
+                        }
+                    })
+                }
+            })
+
+        }
+
+
+        // 搜索按钮点击事件
+        $('#files-btn-search').click(function () {
+            var key = $('#files-edit-search').val();
+            table.reload('files-table', {where: {searchKey: key}});
+        });
+    });
+
+
+</script>

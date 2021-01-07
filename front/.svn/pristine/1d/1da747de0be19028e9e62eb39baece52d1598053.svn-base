@@ -1,0 +1,161 @@
+<div class="layui-card">
+    <div class="layui-card-body">
+        <div class="layui-form toolbar">
+            搜索：
+            <select id="goods-evaluate-search-key">
+                <option value="">-请选择-</option>
+                <option value="userId">用户编号</option>
+                <option value="goodsId">商品编号</option>
+                <option value="orderId">订单编号</option>
+            </select>&emsp;
+            <input id="goods-evaluate-edit-value" class="layui-input search-input" type="text" placeholder="输入关键字"/>&emsp;
+            <button id="goods-evaluate-btn-search" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>搜索
+            </button>
+        </div>
+
+        <!-- 数据表格 -->
+        <table class="layui-table" id="goods-evaluate-table" lay-filter="goods-evaluate-table"></table>
+    </div>
+</div>
+
+
+<!-- 表格操作列 -->
+<script type="text/html" id="goods-evaluate-table-bar">
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+</script>
+
+<script>
+    layui.use(['form', 'table', 'util', 'config', 'admin', 'formSelects', 'rate'], function () {
+        var form = layui.form;
+        var table = layui.table;
+        var config = layui.config;
+        var layer = layui.layer;
+        var rate = layui.rate;
+        var util = layui.util;
+        var admin = layui.admin;
+        var formSelects = layui.formSelects;
+
+        //渲染表格
+        layer.load(2);
+        table.render({
+            elem: '#goods-evaluate-table',
+            url: config.base_server + 'api-user/evaluate/list',
+            where: {
+                access_token: config.getToken().access_token,
+                searchKey: 'dataFlag',
+                searchValue: '1'
+            },
+            page: {first: '首页',last: '尾页'},
+            cols: [[
+                {type: 'numbers'},
+                {field: 'orderId', sort: true, title: '订单编号', width: 200},
+                {field: 'userId', sort: true, title: '用户编号', width: 200},
+                {field: 'goodsId', sort: true, title: '商品编号', width: 200},
+                {field: 'evaluate', sort: true, title: '商品评论', width: 300},
+                {
+                    field: 'imgUrl', width: 100, title: '图片', align: 'center',
+                    templet: function (d) {
+                        let res = '<a href="' + d.imgUrl + '" target="_blank" title="点击查看大图"><img width="80px" height="80px" src="' + d.imgUrl + '"/></a>'
+                        return res;
+                    }
+                },
+                {
+                    field: 'score', sort: true, title: '商品评分', templet: function (d) {
+                        let res;
+                        if (d.score == 1) {
+                            res = '<img src="../../assets/images/starts/oneStar.png">';
+                        } else if (d.score == 2) {
+                            res = '<img src="../../assets/images/starts/twoStar.png">';
+                        } else if (d.score == 3) {
+                            res = '<img src="../../assets/images/starts/threeStar.png">';
+                        } else if (d.score == 4) {
+                            res = '<img src="../../assets/images/starts/fourStar.png">';
+                        } else if (d.score == 5) {
+                            res = '<img src="../../assets/images/starts/fiveStar.png">';
+                        }
+                        return res;
+                    }, width: 150
+                },
+                {
+                    field: 'transportationScore', sort: true, title: '运输评分', templet: function (d) {
+                        let res;
+                        if (d.transportationScore == 1) {
+                            res = '<img src="../../assets/images/starts/oneStar.png">';
+                        } else if (d.transportationScore == 2) {
+                            res = '<img src="../../assets/images/starts/twoStar.png">';
+                        } else if (d.transportationScore == 3) {
+                            res = '<img src="../../assets/images/starts/threeStar.png">';
+                        } else if (d.transportationScore == 4) {
+                            res = '<img src="../../assets/images/starts/fourStar.png">';
+                        }else if (d.transportationScore == 5) {
+                            res = '<img src="../../assets/images/starts/fiveStar.png">';
+                        }
+                        return res;
+                    }, width: 150
+                },
+                {
+                    field: 'service', sort: true, title: '服务评分', templet: function (d) {
+                        let res;
+                        if (d.service == 1) {
+                            res = '<img src="../../assets/images/starts/oneStar.png">';
+                        } else if (d.service == 2) {
+                            res = '<img src="../../assets/images/starts/twoStar.png">';
+                        } else if (d.service == 3) {
+                            res = '<img src="../../assets/images/starts/threeStar.png">';
+                        } else if (d.service == 4) {
+                            res = '<img src="../../assets/images/starts/fourStar.png">';
+                        } else if (d.service == 5) {
+                            res = '<img src="../../assets/images/starts/fiveStar.png">';
+                        }
+                        return res;
+                    }, width: 150
+                },
+                {field: 'createTime', sort: true, title: '发表时间', width: 180},
+                {align: 'center', toolbar: '#goods-evaluate-table-bar', title: '操作', width: 100}
+            ]
+            ],
+            done: function (res, curr, count) {
+                $(".layui-table-cell").css("height", "auto");
+                layer.closeAll('loading');
+            }
+        });
+
+        // 工具条点击事件
+        table.on('tool(goods-evaluate-table)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'del') { //删除
+                doDelete(obj);
+            }
+        });
+
+        // 搜索按钮点击事件
+        $('#goods-evaluate-btn-search').click(function () {
+            var key = $('#goods-evaluate-search-key').val();
+            var value = $('#goods-evaluate-edit-value').val();
+            table.reload('goods-evaluate-table', {where: {searchKey: key, searchValue: value}});
+        });
+
+        // 删除
+        var doDelete = function (obj) {
+            layer.confirm('确定要删除吗？', function (i) {
+                layer.close(i);
+                layer.load(2);
+                const reqdata = {
+                    id: obj.data.id,
+                    dataFlag: 0
+                }
+                admin.req('api-user/evaluate/update', JSON.stringify(reqdata), function (data) {
+                    layer.closeAll('loading');
+                    if (data.code == 0) {
+                        layer.msg(data.msg, {icon: 1, time: 500});
+                        obj.del();
+                    } else {
+                        layer.msg(data.msg, {icon: 2, time: 500});
+                    }
+                }, 'POST');
+            });
+        };
+
+    });
+
+</script>

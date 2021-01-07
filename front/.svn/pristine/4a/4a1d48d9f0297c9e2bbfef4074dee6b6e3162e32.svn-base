@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.open.capacity.user.dao.UserRanksDao">
+
+    <resultMap type="com.open.capacity.user.model.UserRanks" id="userRanksMap">
+        <result property="rankId" column="rank_id"/>
+        <result property="rankName" column="rank_name"/>
+        <result property="startScore" column="start_score"/>
+        <result property="endScore" column="end_score"/>
+        <result property="rebate" column="rebate"/>
+        <result property="userrankImg" column="userrank_img"/>
+        <result property="dataflag" column="dataFlag"/>
+        <result property="createtime" column="createTime"/>
+    </resultMap>
+
+    <insert id="save" parameterType="com.open.capacity.user.model.UserRanks">
+        insert into user_ranks(rank_id,rank_name,start_score,end_score,rebate,userrank_img,dataFlag,createTime)
+                  values (#{ rankId},#{ rankName},#{ startScore},#{ endScore},#{ rebate},#{ userrankImg},#{ dataflag},now())
+    </insert>
+
+    <update id="update" parameterType="com.open.capacity.user.model.UserRanks">
+        update user_ranks
+        <set>
+            <if test="rankName != null">
+                rank_name = #{rankName},
+            </if>
+            <if test="startScore != null">
+                start_score = #{startScore},
+            </if>
+            <if test="endScore != null">
+                end_score = #{endScore},
+            </if>
+            <if test="rebate != null">
+                rebate = #{rebate},
+            </if>
+            <if test="userrankImg != null">
+                userrank_img = #{userrankImg},
+            </if>
+            <if test="dataflag != null">
+                dataFlag = #{dataflag},
+            </if>
+        </set>
+        where rank_id = #{rankId}
+    </update>
+
+    <delete id="delete" parameterType="long" flushCache="true">
+        delete from user_ranks where rank_id = #{rankId}
+    </delete>
+
+    <select id="findAll" parameterType="map" resultMap="userRanksMap">
+        select * from user_ranks t
+        <include refid="where"/>
+    </select>
+    <sql id="where">
+        <where>
+            <if test="searchKey != null and searchKey != '' and searchKey=='rankId'">
+                and t.rank_id like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='rankName'">
+                and t.rank_name like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='startScore'">
+                and t.start_score like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='endScore'">
+                and t.end_score like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='rebate'">
+                and t.rebate like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='userrankImg'">
+                and t.userrank_img like concat('%', #{searchValue}, '%')
+            </if>
+            and t.dataflag = 1
+        </where>
+    </sql>
+</mapper>

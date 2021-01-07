@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.open.capacity.user.dao.UserAddressDao">
+
+    <resultMap type="com.open.capacity.user.model.UserAddress" id="userAddressMap">
+        <result property="addressId" column="address_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="userPhone" column="user_phone"/>
+        <result property="province" column="province"/>
+        <result property="city" column="city"/>
+        <result property="area" column="area"/>
+        <result property="twon" column="twon"/>
+        <result property="address" column="address"/>
+        <result property="isdefault" column="isDefault"/>
+        <result property="dataFlag" column="data_flag"/>
+        <result property="createtime" column="createTime"/>
+    </resultMap>
+
+    <insert id="save" parameterType="com.open.capacity.user.model.UserAddress">
+        insert into user_address(address_id,user_id,user_name,user_phone,province,city,area,twon,address,isDefault,createTime)
+        values (#{ addressId},#{ userId},#{ userName},#{ userPhone},#{ province},#{ city},#{ area},#{ twon},#{ address},#{ isdefault},now())
+    </insert>
+
+    <update id="update" parameterType="com.open.capacity.user.model.UserAddress">
+        update user_address
+        <set>
+            <if test="userId != null">
+                user_id = #{userId},
+            </if>
+            <if test="userName != null">
+                user_name = #{userName},
+            </if>
+            <if test="userPhone != null">
+                user_phone = #{userPhone},
+            </if>
+            <if test="province != null">
+                province = #{province},
+            </if>
+            <if test="city != null">
+                city = #{city},
+            </if>
+            <if test="area != null">
+                area = #{area},
+            </if>
+            <if test="twon != null">
+                twon = #{twon},
+            </if>
+            <if test="address != null">
+                address = #{address},
+            </if>
+            <if test="isdefault != null">
+                isDefault = #{isdefault},
+            </if>
+            <if test="dataFlag != null">
+                data_flag = #{dataFlag},
+            </if>
+        </set>
+        where address_id = #{addressId}
+    </update>
+
+    <delete id="delete" parameterType="long" flushCache="true">
+        delete from user_address where address_id = #{addressId}
+    </delete>
+
+    <select id="findAll" parameterType="map" resultMap="userAddressMap">
+        select * from user_address t
+        <include refid="where"/>
+    </select>
+    <sql id="where">
+        <where>
+            <if test="searchKey != null and searchKey != '' and searchKey=='addressId'">
+                and t.address_id = #{searchValue}
+            </if>
+            <if test="userId != null and userId != ''">
+                and t.user_id = #{userId}
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='userName'">
+                and t.user_name like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='userPhone'">
+                and t.user_phone like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='province'">
+                and t.province like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='city'">
+                and t.city like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='area'">
+                and t.area like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='twon'">
+                and t.twon like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='address'">
+                and t.address like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='isdefault'">
+                and t.isDefault like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='dataFlag'">
+                and t.data_flag like concat('%', #{searchValue}, '%')
+            </if>
+            and data_flag = '1' order by isdefault desc
+        </where>
+    </sql>
+</mapper>

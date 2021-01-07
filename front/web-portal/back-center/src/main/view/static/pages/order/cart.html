@@ -1,0 +1,229 @@
+<div class="layui-card">
+    <div class="layui-card-body">
+        <div class="layui-form toolbar">
+            加入时间：
+            <div class="layui-input-inline">
+                <input class="layui-input" id="cart_create_time" type="text" autocomplete="off"
+                       placeholder=" 开始 - 结束">
+            </div>
+            搜索：
+            <select id="cart-search-key">
+                <option value="">-请选择-</option>
+                <option value="userId">用户编号</option>
+                <option value="goodsId">商品编号</option>
+            </select>&emsp;
+            <input id="cart-edit-value" class="layui-input search-input" type="text" placeholder="输入关键字"/>&emsp;
+            <button id="cart-btn-search" class="layui-btn icon-btn"><i class="layui-icon">&#xe615;</i>搜索
+            </button>
+            <!--            <button id="cart-btn-add" class="layui-btn icon-btn"><i class="layui-icon">&#xe654;</i>添加</button>-->
+        </div>
+
+        <!-- 数据表格 -->
+        <table class="layui-table" id="cart-table" lay-filter="cart-table"></table>
+    </div>
+</div>
+
+<!-- 表单弹窗 -->
+<script type="text/html" id="cart-model">
+    <form id="cart-form" lay-filter="cart-form" class="layui-form model-form">
+        <div class="layui-form-item">
+            <label class="layui-form-label"></label>
+            <div class="layui-input-block">
+                <input name="car_id" placeholder="请输入" type="text"
+                       class="layui-input" maxlength="20"
+                       lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">用户表id</label>
+            <div class="layui-input-block">
+                <input name="user_id" placeholder="请输入用户表id" type="text"
+                       class="layui-input" maxlength="20"
+                       lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">商品id</label>
+            <div class="layui-input-block">
+                <input name="proid" placeholder="请输入商品id" type="text"
+                       class="layui-input" maxlength="20"
+                       lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">数量</label>
+            <div class="layui-input-block">
+                <input name="quantity" placeholder="请输入数量" type="text"
+                       class="layui-input" maxlength="20"
+                       lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">是否选择,1=已勾选,0=未勾选</label>
+            <div class="layui-input-block">
+                <input name="checked" placeholder="请输入是否选择,1=已勾选,0=未勾选" type="text"
+                       class="layui-input" maxlength="20"
+                       lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">创建时间</label>
+            <div class="layui-input-block">
+                <input name="create_time" placeholder="请输入创建时间" type="text"
+                       class="layui-input" maxlength="20"
+                       lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label">更新时间</label>
+            <div class="layui-input-block">
+                <input name="update_time" placeholder="请输入更新时间" type="text"
+                       class="layui-input" maxlength="20"
+                       lay-verify="required" required/>
+            </div>
+        </div>
+        <div class="layui-form-item model-form-footer">
+            <button class="layui-btn layui-btn-primary" ew-event="closeDialog" type="button">取消</button>
+            <button class="layui-btn" lay-filter="cart-form-submit" lay-submit>保存</button>
+        </div>
+    </form>
+</script>
+
+<!-- 表格操作列 -->
+<!--<script type="text/html" id="cart-table-bar">-->
+<!--    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="edit">修改</a>-->
+<!--    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>-->
+<!--</script>-->
+
+<script>
+    layui.use(['form', 'table', 'util', 'config','laydate', 'admin', 'formSelects'], function () {
+        var form = layui.form;
+        var table = layui.table;
+        var config = layui.config;
+        var layer = layui.layer;
+        var util = layui.util;
+        var admin = layui.admin;
+        var laydate = layui.laydate;
+        var formSelects = layui.formSelects;
+
+        //通过时间范围查询
+        laydate.render({
+            elem: '#cart_create_time',
+            trigger: 'click',
+            range: true,
+            theme: '#1e9fff',
+            done: function (value, date, endDate) {
+                var key = 'createTime';
+                table.reload('cart-table', {where: {searchKey: key, searchValue: value}});
+            }
+        });
+
+        //渲染表格
+        table.render({
+            elem: '#cart-table',
+            url: config.base_server + 'api-user/cart/list',
+            where: {
+                access_token: config.getToken().access_token
+            },
+            page: {first: '首页',last: '尾页'},
+            cols: [[
+                {type: 'numbers'},
+                {field: 'userId', align: 'center', sort: true, title: '用户编号'},
+                {field: 'goodsId', align: 'center', sort: true, title: '商品编号'},
+                {field: 'quantity', align: 'center', sort: true, title: '数量'},
+                {
+                    field: 'checked', align: 'center', sort: true, templet: function (d) {
+                        return d.checked == 1 ? 'yes' : 'no';
+                    }, title: '是否选中'
+                },
+                {field: 'updateTime', sort: true, title: '更新时间', align: 'center'},
+                {field: 'createTime', sort: true, title: '创建时间', align: 'center'},
+                // {align: 'center', toolbar: '#cart-table-bar', title: '操作', width: 250}
+            ]]
+        });
+
+        // 添加按钮点击事件
+        $('#cart-btn-add').click(function () {
+            showEditModel();
+        });
+
+        // 表单提交事件
+        form.on('submit(cart-form-submit)', function (data) {
+            layer.load(2);
+            var url = "";
+            if (data.field.id == '') {
+                url = 'api-user/cart/' + 'save';
+            } else {
+                url = 'api-user/cart/' + 'update';
+            }
+            admin.req(url, JSON.stringify(data.field), function (data) {
+                layer.closeAll('loading');
+                if (data.code == 0) {
+                    layer.msg(data.msg, {icon: 1, time: 500});
+                    table.reload('cart-table');
+                    layer.closeAll('page');
+                } else {
+                    layer.msg(data.msg, {icon: 2, time: 500});
+                }
+            }, $('#cart-form').attr('method'));
+            return false;
+        });
+
+        // 工具条点击事件
+        table.on('tool(cart-table)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'edit') { //修改
+                showEditModel(data);
+            } else if (obj.event === 'del') { //删除
+                doDelete(obj);
+            }
+        });
+
+        // 搜索按钮点击事件
+        $('#cart-btn-search').click(function () {
+            var key = $('#cart-search-key').val();
+            var value = $('#cart-edit-value').val();
+            table.reload('cart-table', {where: {searchKey: key, searchValue: value}});
+        });
+
+        // 显示编辑弹窗
+        var showEditModel = function (data) {
+            layer.open({
+                type: 1,
+                title: data ? '修改' : '添加',
+                area: '450px',
+                offset: '120px',
+                content: $('#cart-model').html(),
+                success: function () {
+                    $('#cart-form')[0].reset();
+                    $('#cart-form').attr('method', 'POST');
+                    if (data) {
+                        $("input[name='code']").attr('disabled', true);
+                        $("input[name='code']").attr('class', "layui-input layui-disabled");
+                        form.val('cart-form', data);
+                        $('#cart-form').attr('method', 'POST');
+                    }
+                }
+            });
+        };
+
+        // 删除
+        var doDelete = function (obj) {
+            layer.confirm('确定要删除吗？', function (i) {
+                layer.close(i);
+                layer.load(2);
+                admin.req('api-user/cart/delete/' + obj.data.id, {}, function (data) {
+                    layer.closeAll('loading');
+                    if (data.code == 0) {
+                        layer.msg(data.msg, {icon: 1, time: 500});
+                        obj.del();
+                    } else {
+                        layer.msg(data.msg, {icon: 2, time: 500});
+                    }
+                }, 'DELETE');
+            });
+        };
+
+    });
+
+</script>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.open.capacity.user.dao.BrandsDao">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.open.capacity.user.model.Brands" id="brandsTbMap">
+        <result property="id" column="id"/>
+        <result property="brandsId" column="brands_id"/>
+        <result property="brandsName" column="brands_name"/>
+        <result property="brandsIntroduce" column="brands_introduce"/>
+        <result property="brandsImg" column="brands_img"/>
+        <result property="createTime" column="create_time"/>
+    </resultMap>
+
+    <insert id="save" parameterType="com.open.capacity.user.model.Brands">
+        insert into brands(id,brands_id,brands_name,brands_introduce,brands_img,create_time
+        ) values (#{ id},#{ brandsId},#{ brandsName},#{ brandsIntroduce},#{ brandsImg},NOW())
+    </insert>
+
+    <update id="update" parameterType="com.open.capacity.user.model.Brands">
+        update brands
+        <set>
+            <if test="id != null">
+                id = #{id},
+            </if>
+            <if test="brandsId != null">
+                brands_id = #{brandsId},
+            </if>
+            <if test="brandsName != null">
+                brands_name = #{brandsName},
+            </if>
+            <if test="brandsIntroduce != null">
+                brands_introduce = #{brandsIntroduce},
+            </if>
+            <if test="brandsImg != null">
+                brands_img = #{brandsImg},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="long" flushCache="true">
+        delete from brands where id = #{id}
+    </delete>
+
+    <select id="findAll" parameterType="map" resultType="com.open.capacity.user.model.Brands">
+        select * from brands t
+        <include refid="where"/>
+    </select>
+    <sql id="where">
+        <where>
+            <if test="searchKey != null and searchKey != '' and searchKey=='id'">
+                and t.id like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='brandsId'">
+                and t.brands_id like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='brandsName'">
+                and t.brands_name like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='brandsIntroduce'">
+                and t.brands_introduce like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='brandsImg'">
+                and t.brands_img like concat('%', #{searchValue}, '%')
+            </if>
+            <if test="searchKey != null and searchKey != '' and searchKey=='createTime'">
+                and t.create_time like concat('%', #{searchValue}, '%')
+            </if>
+        </where>
+    </sql>
+</mapper>
